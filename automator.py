@@ -28,6 +28,9 @@ class PreAmplifier:
 
         portcheck(self.serial)
 
+	def __del__(self):
+		self.serial.close()
+		
     def set_sensitivity(self, val):
         # Changes Sensitivity, notation n,u is used
         sens_code = {'2n': 10, '20n': 13, '200n': 16, '2u': 19, '20u': 22,
@@ -62,29 +65,31 @@ class SpectrumAnalyzer:
 
         portcheck(self.serial)
 
-    def getfft(self,trace=0):
-        mestot = "\r" + "SPEC?" + str(trace) + "0,154" + "\n"
-        self.serial.write(mestot.encode())
-        # Wait a bit for response
-        time.sleep(1)
-        out = str(fft.readline().decode())
-        print out
-        if out is not None and out is not '':
-            return(str(out))
-        else:
-            time.sleep(7)
-            out = str(fft.readline().decode())
-            return str(out)
+	def __del__(self):
+		self.serial.close()
+		
+    def getfft(self):
+		"Gets fft of trace: 0 for spectrum, 1 for PSD"
 
+        input = "SPEC?" + str(self.trace) + "0,154"
+        # send the character to the device
+        # (note that I append a \r\n carriage return and line feed to the characters - this is requested by my device)
+        self.serial.write(input + '\r\n')
+        out = ''
+        # let's wait one second before reading output (let's give device time to answer)
+        time.sleep(1)
+        while self.serial.inWaiting() > 0:
+            out += self.serial.read(1)
+
+        if out != '':
+            return out
+			
 def portcheck(ser):
 	if ser.isOpen():
 		ser.flushInput()
 		ser.flushOutput()
 		ser.close()
-			
-# Gets fft of trace
-# 0 for spectrum, 1 for PSD
-
+	ser.open()
 
 # Get Sensitivity times fft value
 def value(sen=None, fft=None):
@@ -107,8 +112,6 @@ def biasch(val):
     mes = "BSLV" + str(int(float(val)*1000)) + "\n"
     curc.write(mes.encode())
     return val
-
-
 
 
 # Clears overload, Never used
