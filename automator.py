@@ -10,7 +10,7 @@ import serial as _serial
 
 
 """
-SR 570 Pre-Amplifier
+SR 570 Low-Noise Current Pre-Amplifier
 """
 
 
