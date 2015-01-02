@@ -36,12 +36,57 @@ class PreAmplifier:
         sens_code = {'2n': 10, '20n': 13, '200n': 16, '2u': 19, '20u': 22,
                      '200u': 25}
         v = str(val)
-        mes = "SENS" + sens_code[v] + "\n"
-        self.serial.write(mes.encode())
+        input = "SENS" + sens_code[v] + "\n"
+        self.serial.write(input)
         self.sensitivity = v
 
         #sens_real = {'2n': 2e-9, '20n': 2e-8, '200n': 2e-7, '2u': 2e-6, 
         #             '20u': 2e-5, '200u': 2e-4}
+		
+				
+	# Turn Bias On/Off (1/0)
+	#def biason(val):
+	#	mes = "BSON" + str(int(val)) + "\n"
+	#	curc.write(mes.encode())
+	#	return val
+
+
+	# Changes Bias -5 to 5
+	def set_bias_millivolt(self, val):
+		input = "BSLV" + str(val) + "\n"
+		self.serial.write(input)
+
+	# Clears overload, Never used
+	#def clear():
+	#	mes = "ROLD" + "\n"
+	#	curc.write(mes.encode())
+	#	return None
+
+	# Manual Sensivity checker, Could be improved greatly
+	def sencheck():
+		mes1 = int(raw_input("Adjust sensitivity (1/0)?: "))
+		while mes1:
+			mes = raw_input("Adjust Sensitivity (200u,20u.. etc): ")
+			sensch(str(mes))
+			try:
+				mes1 = int(raw_input("Again (1/0)? (Remember to wait!!): "))
+			except:
+				print("Invalid Input")
+				mes1 = int(raw_input("Again (1/0)? (Remember to wait!!): "))
+		return None
+
+
+	# Auto Sensitivity checker
+	def sencheck2():
+		n = 1
+		while n:
+			mes = raw_input("Adjust Sensitivity: ")
+			if mes == '':
+				pass
+				n = 0
+			else:
+				sensch(str(mes))
+		return None
 
 
 """
@@ -72,6 +117,7 @@ class SpectrumAnalyzer:
 		"Gets fft of trace: 0 for spectrum, 1 for PSD"
 
         input = "SPEC?" + str(self.trace) + "0,154"
+		# From http://stackoverflow.com/questions/676172/full-examples-of-using-pyserial-package
         # send the character to the device
         # (note that I append a \r\n carriage return and line feed to the characters - this is requested by my device)
         self.serial.write(input + '\r\n')
@@ -100,27 +146,6 @@ def value(sen=None, fft=None):
     return value
 
 
-# Turn Bias On/Off (1/0)
-def biason(val):
-    es = "BSON" + str(int(val)) + "\n"
-    curc.write(mes.encode())
-    return val
-
-
-# Changes Bias -5 to 5
-def biasch(val):
-    mes = "BSLV" + str(int(float(val)*1000)) + "\n"
-    curc.write(mes.encode())
-    return val
-
-
-# Clears overload, Never used
-def clear():
-    mes = "ROLD" + "\n"
-    curc.write(mes.encode())
-    return None
-
-
 # Float based range creator
 def frange(x, y, jump):
     if jump > 0:
@@ -131,33 +156,6 @@ def frange(x, y, jump):
         while x > y:
             yield x
             x += jump
-
-
-# Manual Sensivity checker, Could be improved greatly
-def sencheck():
-    mes1 = int(raw_input("Adjust sensitivity (1/0)?: "))
-    while mes1:
-        mes = raw_input("Adjust Sensitivity (200u,20u.. etc): ")
-        sensch(str(mes))
-        try:
-            mes1 = int(raw_input("Again (1/0)? (Remember to wait!!): "))
-        except:
-            print("Invalid Input")
-            mes1 = int(raw_input("Again (1/0)? (Remember to wait!!): "))
-    return None
-
-
-# Auto Sensitivity checker
-def sencheck2():
-    n = 1
-    while n:
-        mes = raw_input("Adjust Sensitivity: ")
-        if mes == '':
-            pass
-            n = 0
-        else:
-            sensch(str(mes))
-    return None
 
 
 # Takes a dict and swaps out the values
