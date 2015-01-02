@@ -26,7 +26,7 @@ class PreAmplifier:
         self.bias = None
         self.sensitivity = -1
 
-        portcheck(port)
+        portcheck(self.serial)
 
     def set_sensitivity(self, val):
         # Changes Sensitivity, notation n,u is used
@@ -57,9 +57,10 @@ class SpectrumAnalyzer:
             dsrdtr=0,
             bytesize=_serial.EIGHTBITS,
         )
+		
         self.trace = 0
 
-        portcheck(port)
+        portcheck(self.serial)
 
     def getfft(self,trace=0):
         mestot = "\r" + "SPEC?" + str(trace) + "0,154" + "\n"
@@ -75,13 +76,12 @@ class SpectrumAnalyzer:
             out = str(fft.readline().decode())
             return str(out)
 
-def portcheck(port):
-    if port.isOpen:
-        port.flushInput()
-        port.flushOutput()
-        port.close()
-
-
+def portcheck(ser):
+	if ser.isOpen():
+		ser.flushInput()
+		ser.flushOutput()
+		ser.close()
+			
 # Gets fft of trace
 # 0 for spectrum, 1 for PSD
 
