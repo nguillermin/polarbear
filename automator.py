@@ -8,7 +8,6 @@ import serial as _serial
 # Must Change COM ports in program to match the ones used
 # in the computer, they change everytime replugged
 
-
 """
 SR 570 Low-Noise Current Pre-Amplifier
 """
@@ -28,9 +27,9 @@ class PreAmplifier:
 
         portcheck(self.serial)
 
-	def __del__(self):
-		self.serial.close()
-		
+    def __del__(self):
+        self.serial.close()
+        
     def set_sensitivity(self, val):
         # Changes Sensitivity, notation n,u is used
         sens_code = {'2n': 10, '20n': 13, '200n': 16, '2u': 19, '20u': 22,
@@ -42,51 +41,51 @@ class PreAmplifier:
 
         #sens_real = {'2n': 2e-9, '20n': 2e-8, '200n': 2e-7, '2u': 2e-6, 
         #             '20u': 2e-5, '200u': 2e-4}
-		
-				
-	# Turn Bias On/Off (1/0)
-	#def biason(val):
-	#	mes = "BSON" + str(int(val)) + "\n"
-	#	curc.write(mes.encode())
-	#	return val
+        
+                
+    # Turn Bias On/Off (1/0)
+    #def biason(val):
+    #    mes = "BSON" + str(int(val)) + "\n"
+    #    curc.write(mes.encode())
+    #    return val
 
 
-	# Changes Bias -5 to 5
-	def set_bias_millivolt(self, val):
-		input = "BSLV" + str(val) + "\n"
-		self.serial.write(input)
+    # Changes Bias -5 to 5
+    def set_bias_millivolt(self, val):
+        input = "BSLV" + str(val) + "\n"
+        self.serial.write(input)
 
-	# Clears overload, Never used
-	#def clear():
-	#	mes = "ROLD" + "\n"
-	#	curc.write(mes.encode())
-	#	return None
+    # Clears overload, Never used
+    #def clear():
+    #    mes = "ROLD" + "\n"
+    #    curc.write(mes.encode())
+    #    return None
 
-	# Manual Sensivity checker, Could be improved greatly
-	def sencheck():
-		mes1 = int(raw_input("Adjust sensitivity (1/0)?: "))
-		while mes1:
-			mes = raw_input("Adjust Sensitivity (200u,20u.. etc): ")
-			sensch(str(mes))
-			try:
-				mes1 = int(raw_input("Again (1/0)? (Remember to wait!!): "))
-			except:
-				print("Invalid Input")
-				mes1 = int(raw_input("Again (1/0)? (Remember to wait!!): "))
-		return None
+    # Manual Sensivity checker, Could be improved greatly
+    def sencheck():
+        mes1 = int(raw_input("Adjust sensitivity (1/0)?: "))
+        while mes1:
+            mes = raw_input("Adjust Sensitivity (200u,20u.. etc): ")
+            sensch(str(mes))
+            try:
+                mes1 = int(raw_input("Again (1/0)? (Remember to wait!!): "))
+            except:
+                print("Invalid Input")
+                mes1 = int(raw_input("Again (1/0)? (Remember to wait!!): "))
+        return None
 
 
-	# Auto Sensitivity checker
-	def sencheck2():
-		n = 1
-		while n:
-			mes = raw_input("Adjust Sensitivity: ")
-			if mes == '':
-				pass
-				n = 0
-			else:
-				sensch(str(mes))
-		return None
+    # Auto Sensitivity checker
+    def sencheck2():
+        n = 1
+        while n:
+            mes = raw_input("Adjust Sensitivity: ")
+            if mes == '':
+                pass
+                n = 0
+            else:
+                sensch(str(mes))
+        return None
 
 
 """
@@ -105,19 +104,17 @@ class SpectrumAnalyzer:
             dsrdtr=0,
             bytesize=_serial.EIGHTBITS,
         )
-		
+        
         self.trace = 0
 
         portcheck(self.serial)
 
-	def __del__(self):
-		self.serial.close()
-		
-    def getfft(self):
-	"Gets fft of trace: 0 for spectrum, 1 for PSD"
+    def __del__(self):
+        self.serial.close()
 
+    def getfft(self):
         input = "SPEC?" + str(self.trace) + "0,154"
-		# From http://stackoverflow.com/questions/676172/full-examples-of-using-pyserial-package
+        # From http://stackoverflow.com/questions/676172/full-examples-of-using-pyserial-package
         # send the character to the device
         # (note that I append a \r\n carriage return and line feed to the characters - this is requested by my device)
         self.serial.write(input + '\r\n')
@@ -129,13 +126,20 @@ class SpectrumAnalyzer:
 
         if out != '':
             return out
-			
+        
+    def donothing():
+        print "I'm here!"
+        
+    def identify(self):
+        self.serial.write("*IDN?\r\n")
+
+            
 def portcheck(ser):
-	if ser.isOpen():
-		ser.flushInput()
-		ser.flushOutput()
-		ser.close()
-	ser.open()
+    if ser.isOpen():
+        ser.flushInput()
+        ser.flushOutput()
+        ser.close()
+    ser.open()
 
 # Get Sensitivity times fft value
 def value(sen=None, fft=None):
@@ -194,16 +198,14 @@ def filehandle(adict, name):
 # do some error handling so loss of data doesnt happen
 # create file writer
 
-def automode(rmin, rmax, interval):
+def automode(preamp, spec, rmin, rmax, interval):
         data = dict()
         vals = []
         n = 0
-        # Turn bias on
-        biason(1)
         # set bias
-        bias = biasch("{0:.2f}".format(rmin))
+        bias = preamp.biasch("{0:.2f}".format(rmin))
         # Turn sensitivity to the highest
-        sensch("200u")
+        preamp.sensch("200u")
         for i in frange(rmin, rmax, interval):
 
             # Manual Starting Sensitivity
