@@ -198,37 +198,24 @@ def filehandle(adict, name):
 # do some error handling so loss of data doesnt happen
 # create file writer
 
-def automode(preamp, spec, rmin, rmax, interval):
-        data = dict()
-        vals = []
-        n = 0
-        # set bias
-        bias = preamp.biasch("{0:.2f}".format(rmin))
+def automode(preamp, spec, voltages):
+        data = []
         # Turn sensitivity to the highest
-        preamp.sensch("200u")
-        for i in frange(rmin, rmax, interval):
-
-            # Manual Starting Sensitivity
-            if n == 0:
-                sencheck2()
-            bias = biasch("{0:.2f}".format(i))
-            time.sleep(4)
-
-            # Take value
-            val = value()
-            vals.append(val)
-
-            # Check Overload
-            if n % 3 == 0 and n != 0:
-                sencheck2()
-
-            print(str(bias) + "   " + str(val))
-            data[str(bias)] = val
-
-            n += 1
-
-        dicprint2(data, "n", None)
-        return None
+        preamp.set_sensitivity("200u")
+        for i, V in enumerate(voltages):
+            preamp.set_bias_millivolt(V)
+            
+            input = raw_input('> Is sensitivity overload? (y/n)?')
+            if input is 'y':
+                while input is not '':
+                    input = raw_input('>> Correct overland and press enter')
+                data.append(spec.getfft())
+            elif input is 'n':
+                # Take value
+                data.append(spec.getfft())
+                
+        print data
+        return data
 
 ####################
 
