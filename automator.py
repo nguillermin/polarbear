@@ -254,7 +254,7 @@ def capture(preamp, spec, voltages):
                             break
                 if (time.time() - start_time) > 5:
                     break
-            data.append(spec.getfft())
+            data.append(spec.getfft().strip())
     except KeyboardInterrupt:
             print ">> Capture cancelled."
     return data
@@ -298,3 +298,12 @@ def manual():
 if __name__ == '__main__':
     spec = SpectrumAnalyzer('COM4')
     preamp = PreAmplifier('COM5')
+
+    lo = raw_input('Enter minimum voltage:')
+    hi = raw_input('Enter maximum voltage:')
+    step = raw_input('Enter step value ([1,2,3] has a step value of 1):')
+    data = capture(preamp, spec, range(lo, hi, step))
+    fi = raw_input('Enter filename:')
+    with open(fi, "w") as f:
+        for l in comma_separatify(data):
+            f.write(l)
