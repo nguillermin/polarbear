@@ -126,6 +126,7 @@ class SpectrumAnalyzer:
 
     def getfft(self):
         input = "SPEC?" + str(self.trace) + "0,154"
+
         # From http://stackoverflow.com/questions/676172/full-examples-of-using
         # -pyserial-package
         # send the character to the device

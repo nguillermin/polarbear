@@ -1,0 +1,7 @@
+# Exporting data
+
+# Better fft capture (averaging?)
+
+# "SR760 supports CTS/DTR hardware handshaking"
+
+
