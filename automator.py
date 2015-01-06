@@ -234,8 +234,8 @@ def capture(preamp, spec, voltages):
     data = []
     # progress = ('|','/','--','\\')
     print ">> Hit any key if Pre-Amp overloads (Ctrl-C to cancel)"
-    for i, V in enumerate(voltages):
-        try:
+    try:
+        for i, V in enumerate(voltages):
             preamp.set_bias_millivolts(V*1000)
             start_time = time.time()
             while True:
@@ -254,7 +254,7 @@ def capture(preamp, spec, voltages):
                 if (time.time() - start_time) > 5:
                     break
             data.append(spec.getfft())
-        except KeyboardInterrupt:
+    except KeyboardInterrupt:
             print ">> Capture cancelled."
     return data
 
