@@ -39,6 +39,8 @@ class PreAmplifier:
     def set_bias_millivolt(self, val):
         input = "BSLV" + str(val) + "\r\n"
         self.serial.write(input)
+        self.bias = val
+        print "Bias voltage might (will) be slightly off"
 
     def set_sensitivity(self, val):
         # Changes Sensitivity, notation n,u is used
