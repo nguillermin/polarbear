@@ -2,7 +2,7 @@
 # Date: 6/5/14
 # Purpose: Cutting I-V measurements time from hours to minutes
 
-import time, thread
+import sys, time, msvcrt
 import serial as _serial
 
 # Must Change COM ports in program to match the ones used
@@ -36,28 +36,16 @@ class PreAmplifier:
         # Sanitize input?
         self.bias = bias
 
-    def set_bias_millivolt(self, val):
-        input = "BSLV" + str(val) + "\r\n"
+    def set_bias_millivolts(self, mv):
+        input = "BSLV" + str(mv) + "\r\n"
         self.serial.write(input)
-
-    def set_sensitivity(self, val):
-        # Changes Sensitivity, notation n,u is used
-        sens_code = {'2n': 10, '20n': 13, '200n': 16, '2u': 19, '20u': 22,
-                     '200u': 25}
-        # Only using 2*multiples of 10 from nanoAmps(n) to microAmps(u)
-        v = str(val)
-        input = "SENS" + sens_code[v] + "\r\n"
-        self.serial.write(input)
-        self.sensitivity = v
-
-        # sens_real = {'2n': 2e-9, '20n': 2e-8, '200n': 2e-7, '2u': 2e-6,
-        #             '20u': 2e-5, '200u': 2e-4}
+        self.bias = mv
 
     def set_sensitivity_nanoamps(self, val):
         # Only using 2*multiples of 10 from nanoAmps(n) to microAmps(u)
         # All possible values are [1,2,5,...1e9,2e9,5e9] picoAmps
         n = -1
-        while val > 0:
+        while val > 1:
             n += 1
             val = val/10
 
@@ -246,19 +234,29 @@ def automode(preamp, spec, voltages):
 def capture(preamp, spec, voltages):
     data = []
     # progress = ('|','/','--','\\')
-    print ">> Hit any key if sensitivity overload"
-    for i, V in enumerate(voltages):
-        L = []
-        thread.start_new_thread(input_thread, (L,))
-        preamp.set_bias_millivolts(V*1000)
-        time.sleep(3.0)
-        if L:
-            print ">> Set sensitivity and hit any key to resume measure"
-            raw_input()
-            print ">> Resuming..."
-            time.sleep(1.0)
-        data.append(spec.getfft())
-
+    print ">> Hit any key if Pre-Amp overloads (Ctrl-C to cancel)"
+    try:
+        for i, V in enumerate(voltages):
+            preamp.set_bias_millivolts(V*1000)
+            start_time = time.time()
+            while True:
+                if msvcrt.kbhit():
+                    _ = msvcrt.getch()
+                    print ">> Adjust sensitivity and hit any key to continue"
+                    start_time = time.time()
+                    while True:
+                        if msvcrt.kbhit():
+                            _ = msvcrt.getch()
+                            print "Restarting..."
+                            break
+                        if (time.time() - start_time) > 10:
+                            print "Restarting on timeout..."
+                            break
+                if (time.time() - start_time) > 5:
+                    break
+            data.append(spec.getfft())
+    except KeyboardInterrupt:
+            print ">> Capture cancelled."
     return data
 
 ####################
