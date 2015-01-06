@@ -41,6 +41,7 @@ class PreAmplifier:
         # Changes Sensitivity, notation n,u is used
         sens_code = {'2n': 10, '20n': 13, '200n': 16, '2u': 19, '20u': 22,
                      '200u': 25}
+        # Only using 2*multiples of 10 from nanoAmps(n) to microAmps(u)
         v = str(val)
         input = "SENS" + sens_code[v] + "\n"
         self.serial.write(input)
@@ -48,6 +49,21 @@ class PreAmplifier:
 
         # sens_real = {'2n': 2e-9, '20n': 2e-8, '200n': 2e-7, '2u': 2e-6,
         #             '20u': 2e-5, '200u': 2e-4}
+
+    def set_sensitivity_nanoamps(self, val):
+        # Only using 2*multiples of 10 from nanoAmps(n) to microAmps(u)
+        # All possible values are [1,2,5,...1e9,2e9,5e9] picoAmps
+        n = -1
+        while val > 0:
+            n += 1
+            val = val/10
+
+        if n > -1:
+            n = str(10+3*n)
+            input = "SENS" + n + "\n"
+            self.serial.write(input)
+            self.sensitivity = val
+        return n
 
     # Clears overload, Never used
     # def clear():
