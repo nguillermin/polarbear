@@ -8,7 +8,6 @@ import serial as _serial
 # Must Change COM ports in program to match the ones used
 # in the computer, they change everytime replugged
 
-
 """
 SR 570 Low-Noise Current Pre-Amplifier
 """
@@ -53,8 +52,9 @@ class PreAmplifier:
     def set_bias_millivolt(self, val):
         if len(str(val)) is not 4:
             print "Incorrect value length (must be 4)"
-        input = "BSLV" + str(val) + "\n"
-        self.serial.write(input)
+        else:
+            input = "BSLV" + str(val) + "\n"
+            self.serial.write(input)
 
     # Clears overload, Never used
     # def clear():
@@ -74,6 +74,7 @@ class PreAmplifier:
                 print("Invalid Input")
                 mes1 = int(raw_input("Again (1/0)? (Remember to wait!!): "))
         return None
+
 
     # Auto Sensitivity checker
     def sencheck2():
@@ -104,7 +105,6 @@ class SpectrumAnalyzer:
             dsrdtr=0,
             bytesize=_serial.EIGHTBITS,
         )
-
         self.trace = 0
 
         portcheck(self.serial)
@@ -113,8 +113,6 @@ class SpectrumAnalyzer:
         self.serial.close()
 
     def getfft(self):
-        "Gets fft of trace: 0 for spectrum, 1 for PSD"
-
         input = "SPEC?" + str(self.trace) + "0,154"
         # From http://stackoverflow.com/questions/676172/full-examples-of-using
         # -pyserial-package
@@ -131,15 +129,20 @@ class SpectrumAnalyzer:
 
         if out != '':
             return out
+        
+    def donothing():
+        print "I'm here!"
+        
+    def identify(self):
+        self.serial.write("*IDN?\r\n")
 
-
+            
 def portcheck(ser):
     if ser.isOpen():
         ser.flushInput()
         ser.flushOutput()
         ser.close()
     ser.open()
-
 
 # Get Sensitivity times fft value
 def value(sen=None, fft=None):
@@ -198,39 +201,24 @@ def filehandle(adict, name):
 # do some error handling so loss of data doesnt happen
 # create file writer
 
-def automode(rmin, rmax, interval):
-        data = dict()
-        vals = []
-        n = 0
-        # Turn bias on
-        biason(1)
-        # set bias
-        bias = biasch("{0:.2f}".format(rmin))
+def automode(preamp, spec, voltages):
+        data = []
         # Turn sensitivity to the highest
-        sensch("200u")
-        for i in frange(rmin, rmax, interval):
-
-            # Manual Starting Sensitivity
-            if n == 0:
-                sencheck2()
-            bias = biasch("{0:.2f}".format(i))
-            time.sleep(4)
-
-            # Take value
-            val = value()
-            vals.append(val)
-
-            # Check Overload
-            if n % 3 == 0 and n != 0:
-                sencheck2()
-
-            print(str(bias) + "   " + str(val))
-            data[str(bias)] = val
-
-            n += 1
-
-        dicprint2(data, "n", None)
-        return None
+        preamp.set_sensitivity("200u")
+        for i, V in enumerate(voltages):
+            preamp.set_bias_millivolt(V)
+            
+            input = raw_input('> Is sensitivity overload? (y/n)?')
+            if input is 'y':
+                while input is not '':
+                    input = raw_input('>> Correct overland and press enter')
+                data.append(spec.getfft())
+            elif input is 'n':
+                # Take value
+                data.append(spec.getfft())
+                
+        print data
+        return data
 
 ####################
 
