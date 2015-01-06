@@ -32,9 +32,11 @@ class PreAmplifier:
 
     def bias_on(self):
         self.serial.write("BSON1\n")
+        bias = raw_input('>> What is bias set to (milliVolts)?')
+        self.bias = bias
 
     def set_bias_millivolt(self, val):
-        input = "BSLV" + str(val) + "\n"
+        input = "BSLV" + str(val) + "\r\n"
         self.serial.write(input)
 
     def set_sensitivity(self, val):
@@ -43,7 +45,7 @@ class PreAmplifier:
                      '200u': 25}
         # Only using 2*multiples of 10 from nanoAmps(n) to microAmps(u)
         v = str(val)
-        input = "SENS" + sens_code[v] + "\n"
+        input = "SENS" + sens_code[v] + "\r\n"
         self.serial.write(input)
         self.sensitivity = v
 
@@ -60,7 +62,7 @@ class PreAmplifier:
 
         if n > -1:
             n = str(10+3*n)
-            input = "SENS" + n + "\n"
+            input = "SENS" + n + "\r\n"
             self.serial.write(input)
             self.sensitivity = val
         return n
@@ -216,11 +218,13 @@ def filehandle(adict, name):
 
 def automode(preamp, spec, voltages):
         data = []
+        if preamp.bias is None:
+            preamp.bias_on()
         # Turn sensitivity to the highest
-        preamp.set_sensitivity("200u")
+        preamp.set_sensitivity_nanoamps(20)
         for i, V in enumerate(voltages):
             preamp.set_bias_millivolt(V)
-            
+
             input = raw_input('> Is sensitivity overload? (y/n)?')
             if input is 'y':
                 while input is not '':
@@ -229,7 +233,7 @@ def automode(preamp, spec, voltages):
             elif input is 'n':
                 # Take value
                 data.append(spec.getfft())
-                
+
         print data
         return data
 
