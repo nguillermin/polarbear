@@ -122,14 +122,17 @@ class SpectrumAnalyzer:
 
         if out != '':
             return out
-       
-    def donothing():
-        print "I'm here!"
-       
+
     def identify(self):
         self.serial.write("*IDN?\r\n")
+        out = ''
+        time.sleep(1)
+        while self.serial.inWaiting() > 0:
+            out += self.serial.read(1)
+        if out != '':
+            return out
 
-           
+
 def portcheck(ser):
     if ser.isOpen():
         ser.flushInput()
