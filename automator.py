@@ -36,30 +36,17 @@ class PreAmplifier:
         # Sanitize input?
         self.bias = bias
 
-    def set_bias_millivolt(self, val):
-        input = "BSLV" + str(val) + "\r\n"
+    def set_bias_millivolt(self, mv):
+        input = "BSLV" + str(mv) + "\r\n"
         self.serial.write(input)
-        self.bias = val
+        self.bias = mv
         print "Bias voltage might (will) be slightly off"
-
-    def set_sensitivity(self, val):
-        # Changes Sensitivity, notation n,u is used
-        sens_code = {'2n': 10, '20n': 13, '200n': 16, '2u': 19, '20u': 22,
-                     '200u': 25}
-        # Only using 2*multiples of 10 from nanoAmps(n) to microAmps(u)
-        v = str(val)
-        input = "SENS" + sens_code[v] + "\r\n"
-        self.serial.write(input)
-        self.sensitivity = v
-
-        # sens_real = {'2n': 2e-9, '20n': 2e-8, '200n': 2e-7, '2u': 2e-6,
-        #             '20u': 2e-5, '200u': 2e-4}
 
     def set_sensitivity_nanoamps(self, val):
         # Only using 2*multiples of 10 from nanoAmps(n) to microAmps(u)
         # All possible values are [1,2,5,...1e9,2e9,5e9] picoAmps
         n = -1
-        while val > 0:
+        while val > 1:
             n += 1
             val = val/10
 
