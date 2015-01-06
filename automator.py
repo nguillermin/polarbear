@@ -2,7 +2,7 @@
 # Date: 6/5/14
 # Purpose: Cutting I-V measurements time from hours to minutes
 
-import time
+import time, thread
 import serial as _serial
 
 # Must Change COM ports in program to match the ones used
@@ -33,6 +33,7 @@ class PreAmplifier:
     def bias_on(self):
         self.serial.write("BSON1\n")
         bias = raw_input('>> What is bias set to (milliVolts)?')
+        # Sanitize input?
         self.bias = bias
 
     def set_bias_millivolt(self, val):
@@ -216,26 +217,48 @@ def filehandle(adict, name):
 # do some error handling so loss of data doesnt happen
 # create file writer
 
+def input_thread(L):
+    raw_input()
+    L.append(None)
+
+
 def automode(preamp, spec, voltages):
-        data = []
-        if preamp.bias is None:
-            preamp.bias_on()
-        # Turn sensitivity to the highest
-        preamp.set_sensitivity_nanoamps(20)
-        for i, V in enumerate(voltages):
-            preamp.set_bias_millivolt(V)
+    if preamp.bias is None:
+        preamp.bias_on()
+    # Turn sensitivity to the highest
+    preamp.set_sensitivity_nanoamps(20)
 
-            input = raw_input('> Is sensitivity overload? (y/n)?')
-            if input is 'y':
-                while input is not '':
-                    input = raw_input('>> Correct overland and press enter')
-                data.append(spec.getfft())
-            elif input is 'n':
-                # Take value
-                data.append(spec.getfft())
+    voltages = sorted(voltages)
+    index_zero = voltages.index(0)
+    positive_voltages = voltages[index_zero:]
+    negative_voltages = reversed(voltages[:index_zero+1])
 
-        print data
-        return data
+    data = []
+    print "Capturing ascending positive voltages..."
+    data.append(capture(preamp, spec, positive_voltages))
+    print "...Capturing descending negative voltages"
+    data.append(reversed(capture(preamp, spec, negative_voltages)))
+
+    return data
+
+
+def capture(preamp, spec, voltages):
+    data = []
+    # progress = ('|','/','--','\\')
+    print ">> Hit any key if sensitivity overload"
+    for i, V in enumerate(voltages):
+        L = []
+        thread.start_new_thread(input_thread, (L,))
+        preamp.set_bias_millivolts(V*1000)
+        time.sleep(3.0)
+        if L:
+            print ">> Set sensitivity and hit any key to resume measure"
+            raw_input()
+            print ">> Resuming..."
+            time.sleep(1.0)
+        data.append(spec.getfft())
+
+    return data
 
 ####################
 
