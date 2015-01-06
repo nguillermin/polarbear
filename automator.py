@@ -30,6 +30,13 @@ class PreAmplifier:
     def __del__(self):
         self.serial.close()
 
+    def bias_on(self):
+        self.serial.write("BSON1\n")
+
+    def set_bias_millivolt(self, val):
+        input = "BSLV" + str(val) + "\n"
+        self.serial.write(input)
+
     def set_sensitivity(self, val):
         # Changes Sensitivity, notation n,u is used
         sens_code = {'2n': 10, '20n': 13, '200n': 16, '2u': 19, '20u': 22,
@@ -39,22 +46,8 @@ class PreAmplifier:
         self.serial.write(input)
         self.sensitivity = v
 
-        # sens_real = {'2n': 2e-9, '20n': 2e-8, '200n': 2e-7, '2u': 2e-6, 
+        # sens_real = {'2n': 2e-9, '20n': 2e-8, '200n': 2e-7, '2u': 2e-6,
         #             '20u': 2e-5, '200u': 2e-4}
-
-    # Turn Bias On/Off (1/0)
-    # def biason(val):
-    #   mes = "BSON" + str(int(val)) + "\n"
-    #   curc.write(mes.encode())
-    #   return val
-
-    # Changes Bias -5 to 5
-    def set_bias_millivolt(self, val):
-        if len(str(val)) is not 4:
-            print "Incorrect value length (must be 4)"
-        else:
-            input = "BSLV" + str(val) + "\n"
-            self.serial.write(input)
 
     # Clears overload, Never used
     # def clear():
@@ -129,14 +122,14 @@ class SpectrumAnalyzer:
 
         if out != '':
             return out
-        
+       
     def donothing():
         print "I'm here!"
-        
+       
     def identify(self):
         self.serial.write("*IDN?\r\n")
 
-            
+           
 def portcheck(ser):
     if ser.isOpen():
         ser.flushInput()
@@ -144,10 +137,11 @@ def portcheck(ser):
         ser.close()
     ser.open()
 
+
 # Get Sensitivity times fft value
-def value(sen=None, fft=None):
+def value(spec, sen=None, fft=None):
     if sen is None:
-        value = float(getfft()) * senreal[sensitivity]
+        value = float(spec.getfft()) * senreal[sensitivity]
     else:
         value = None
     return value
