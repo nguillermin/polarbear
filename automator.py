@@ -2,7 +2,7 @@
 # Date: 6/5/14
 # Purpose: Cutting I-V measurements time from hours to minutes
 
-import time, thread
+import sys, time, msvcrt
 import serial as _serial
 
 # Must Change COM ports in program to match the ones used
@@ -36,11 +36,10 @@ class PreAmplifier:
         # Sanitize input?
         self.bias = bias
 
-    def set_bias_millivolt(self, mv):
+    def set_bias_millivolts(self, mv):
         input = "BSLV" + str(mv) + "\r\n"
         self.serial.write(input)
         self.bias = mv
-        print "Bias voltage might (will) be slightly off"
 
     def set_sensitivity_nanoamps(self, val):
         # Only using 2*multiples of 10 from nanoAmps(n) to microAmps(u)
@@ -234,19 +233,29 @@ def automode(preamp, spec, voltages):
 def capture(preamp, spec, voltages):
     data = []
     # progress = ('|','/','--','\\')
-    print ">> Hit any key if sensitivity overload"
+    print ">> Hit any key if Pre-Amp overloads (Ctrl-C to cancel)"
     for i, V in enumerate(voltages):
-        L = []
-        thread.start_new_thread(input_thread, (L,))
-        preamp.set_bias_millivolts(V*1000)
-        time.sleep(3.0)
-        if L:
-            print ">> Set sensitivity and hit any key to resume measure"
-            raw_input()
-            print ">> Resuming..."
-            time.sleep(1.0)
-        data.append(spec.getfft())
-
+        try:
+            preamp.set_bias_millivolts(V*1000)
+            start_time = time.time()
+            while True:
+                if msvcrt.kbhit():
+                    _ = msvcrt.getch()
+                    print ">> Adjust sensitivity and hit any key to continue"
+                    start_time = time.time()
+                    while True:
+                        if msvcrt.kbhit():
+                            _ = msvcrt.getch()
+                            print "Restarting..."
+                            break
+                        if (time.time() - start_time) > 10:
+                            print "Restarting on timeout..."
+                            break
+                if (time.time() - start_time) > 5:
+                    break
+            data.append(spec.getfft())
+        except KeyboardInterrupt:
+            print ">> Capture cancelled."
     return data
 
 ####################
