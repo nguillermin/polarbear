@@ -28,9 +28,9 @@ class PreAmplifier:
 
         portcheck(self.serial)
 
-	def __del__(self):
-		self.serial.close()
-		
+    def __del__(self):
+        self.serial.close()
+
     def set_sensitivity(self, val):
         # Changes Sensitivity, notation n,u is used
         sens_code = {'2n': 10, '20n': 13, '200n': 16, '2u': 19, '20u': 22,
@@ -40,53 +40,52 @@ class PreAmplifier:
         self.serial.write(input)
         self.sensitivity = v
 
-        #sens_real = {'2n': 2e-9, '20n': 2e-8, '200n': 2e-7, '2u': 2e-6, 
+        # sens_real = {'2n': 2e-9, '20n': 2e-8, '200n': 2e-7, '2u': 2e-6, 
         #             '20u': 2e-5, '200u': 2e-4}
-		
-				
-	# Turn Bias On/Off (1/0)
-	#def biason(val):
-	#	mes = "BSON" + str(int(val)) + "\n"
-	#	curc.write(mes.encode())
-	#	return val
 
+    # Turn Bias On/Off (1/0)
+    # def biason(val):
+    #   mes = "BSON" + str(int(val)) + "\n"
+    #   curc.write(mes.encode())
+    #   return val
 
-	# Changes Bias -5 to 5
-	def set_bias_millivolt(self, val):
-		input = "BSLV" + str(val) + "\n"
-		self.serial.write(input)
+    # Changes Bias -5 to 5
+    def set_bias_millivolt(self, val):
+        if len(str(val)) is not 4:
+            print "Incorrect value length (must be 4)"
+        input = "BSLV" + str(val) + "\n"
+        self.serial.write(input)
 
-	# Clears overload, Never used
-	#def clear():
-	#	mes = "ROLD" + "\n"
-	#	curc.write(mes.encode())
-	#	return None
+    # Clears overload, Never used
+    # def clear():
+    #   mes = "ROLD" + "\n"
+    #   curc.write(mes.encode())
+    #   return None
 
-	# Manual Sensivity checker, Could be improved greatly
-	def sencheck():
-		mes1 = int(raw_input("Adjust sensitivity (1/0)?: "))
-		while mes1:
-			mes = raw_input("Adjust Sensitivity (200u,20u.. etc): ")
-			sensch(str(mes))
-			try:
-				mes1 = int(raw_input("Again (1/0)? (Remember to wait!!): "))
-			except:
-				print("Invalid Input")
-				mes1 = int(raw_input("Again (1/0)? (Remember to wait!!): "))
-		return None
+    # Manual Sensivity checker, Could be improved greatly
+    def sencheck():
+        mes1 = int(raw_input("Adjust sensitivity (1/0)?: "))
+        while mes1:
+            mes = raw_input("Adjust Sensitivity (200u,20u.. etc): ")
+            sensch(str(mes))
+            try:
+                mes1 = int(raw_input("Again (1/0)? (Remember to wait!!): "))
+            except:
+                print("Invalid Input")
+                mes1 = int(raw_input("Again (1/0)? (Remember to wait!!): "))
+        return None
 
-
-	# Auto Sensitivity checker
-	def sencheck2():
-		n = 1
-		while n:
-			mes = raw_input("Adjust Sensitivity: ")
-			if mes == '':
-				pass
-				n = 0
-			else:
-				sensch(str(mes))
-		return None
+    # Auto Sensitivity checker
+    def sencheck2():
+        n = 1
+        while n:
+            mes = raw_input("Adjust Sensitivity: ")
+            if mes == '':
+                pass
+                n = 0
+            else:
+                sensch(str(mes))
+        return None
 
 
 """
@@ -105,37 +104,42 @@ class SpectrumAnalyzer:
             dsrdtr=0,
             bytesize=_serial.EIGHTBITS,
         )
-		
+
         self.trace = 0
 
         portcheck(self.serial)
 
-	def __del__(self):
-		self.serial.close()
-		
+    def __del__(self):
+        self.serial.close()
+
     def getfft(self):
-	"Gets fft of trace: 0 for spectrum, 1 for PSD"
+        "Gets fft of trace: 0 for spectrum, 1 for PSD"
 
         input = "SPEC?" + str(self.trace) + "0,154"
-		# From http://stackoverflow.com/questions/676172/full-examples-of-using-pyserial-package
+        # From http://stackoverflow.com/questions/676172/full-examples-of-using
+        # -pyserial-package
         # send the character to the device
-        # (note that I append a \r\n carriage return and line feed to the characters - this is requested by my device)
+        # (note that I append a \r\n carriage return and line feed to the
+        # characters - this is requested by my device)
         self.serial.write(input + '\r\n')
         out = ''
-        # let's wait one second before reading output (let's give device time to answer)
+        # let's wait one second before reading output (let's give device time
+        # to answer)
         time.sleep(1)
         while self.serial.inWaiting() > 0:
             out += self.serial.read(1)
 
         if out != '':
             return out
-			
+
+
 def portcheck(ser):
-	if ser.isOpen():
-		ser.flushInput()
-		ser.flushOutput()
-		ser.close()
-	ser.open()
+    if ser.isOpen():
+        ser.flushInput()
+        ser.flushOutput()
+        ser.close()
+    ser.open()
+
 
 # Get Sensitivity times fft value
 def value(sen=None, fft=None):
@@ -262,30 +266,7 @@ def manual():
 
 # 3.90625
 # #### Test######
-#testy = {"1.0": "1E-4, 2u", "2.0": "200E-4, 20u", "4.0": "2050E-4, 200u"}
-
-# http://eli.thegreenplace.net/2009/07/31/listing-all-serial-ports-on-windows-with-python/
-from serial.tools import list_ports
-import _winreg as winreg
-import itertools
-
-def enumerate_serial_ports():
-    """ Uses the Win32 registry to return an
-        iterator of serial (COM) ports
-        existing on this computer.
-    """
-    path = 'HARDWARE\\DEVICEMAP\\SERIALCOMM'
-    try:
-        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path)
-    except WindowsError:
-        raise IterationError
-
-    for i in itertools.count():
-        try:
-            val = winreg.EnumValue(key, i)
-            yield str(val[1])
-        except EnvironmentError:
-            break
+# testy = {"1.0": "1E-4, 2u", "2.0": "200E-4, 20u", "4.0": "2050E-4, 200u"}
 
 if __name__ == '__main__':
     spec = SpectrumAnalyzer('COM4')
