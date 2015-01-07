@@ -8,7 +8,6 @@ import serial as _serial
 # Must Change COM ports in program to match the ones used
 # in the computer, they change everytime replugged
 
-sens = [20, 200, 2000, 20000, 200000]
 
 """
 SR 570 Low-Noise Current Pre-Amplifier
@@ -16,6 +15,8 @@ SR 570 Low-Noise Current Pre-Amplifier
 
 
 class PreAmplifier:
+    sens = (20, 200, 2000, 20000, 200000)
+
     def __init__(self, port):
         self.serial = _serial.Serial(
             port=port,
@@ -313,6 +314,12 @@ def manual():
             break
 
 
+def comma_separatify(data):
+    out = []
+    for k, v in data:
+        out.append(','.join(k, v[0], v[1], '\n'))
+    return out
+
 # 3.90625
 # #### Test######
 # testy = {"1.0": "1E-4, 2u", "2.0": "200E-4, 20u", "4.0": "2050E-4, 200u"}
@@ -329,3 +336,4 @@ if __name__ == '__main__':
     with open(fi, "w") as f:
         for l in comma_separatify(data):
             f.write(l)
+        print "Write successful."
