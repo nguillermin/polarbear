@@ -8,6 +8,8 @@ import serial as _serial
 # Must Change COM ports in program to match the ones used
 # in the computer, they change everytime replugged
 
+sens = [20, 200, 2000, 20000, 200000]
+
 """
 SR 570 Low-Noise Current Pre-Amplifier
 """
@@ -55,6 +57,20 @@ class PreAmplifier:
             self.serial.write(input)
             self.sensitivity = val
         return n
+
+    def lower_sensitivity(self):
+        index_curr = sens.index(self.sensitivity)
+        if index_curr > 3:
+            print "Sensitivity already at max (amperage)"
+        else:
+            self.set_sensitivity_nanoamps(sens[index_curr+1])
+
+    def raise_sensitivity(self):
+        index_curr = sens.index(self.sensitivity)
+        if index_curr < 1:
+            print "Sensitivity already at min (amperage)"
+        else:
+            self.set_sensitivity_nanoamps(sens[index_curr-1])
 
     # Clears overload, Never used
     # def clear():
@@ -242,22 +258,28 @@ def capture(preamp, spec, voltages):
             while True:
                 if msvcrt.kbhit():
                     _ = msvcrt.getch()
-                    print ">> Adjust sensitivity and hit any key to continue"
+                    print ">> Adjust sensitivity (+/-) and hit Spacebar to resume"
                     start_time = time.time()
                     while True:
                         if msvcrt.kbhit():
-                            _ = msvcrt.getch()
-                            print "Restarting..."
-                            break
+                            c = msvcrt.getch()
+                            if c == '=' or c == '+':
+                                preamp.raise_sensitivity()
+                                start_time = time.time()
+                            elif c == '-' or c == '_':
+                                preamp.lower_sensitivity()
+                                start_time = time.time()
+                            elif c == ' ':
+                                break
                         if (time.time() - start_time) > 10:
                             print "Restarting on timeout..."
                             break
                 if (time.time() - start_time) > 5:
                     break
-            data.append(spec.getfft().strip())
+            data.append((preamp.sensitivity, spec.getfft().strip()))
     except KeyboardInterrupt:
             print ">> Capture cancelled."
-    return data
+    return {voltages[i]: data[i] for i in range(len(voltages))}
 
 ####################
 
