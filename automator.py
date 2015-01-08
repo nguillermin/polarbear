@@ -62,14 +62,14 @@ class PreAmplifier:
     def lower_sensitivity(self):
         index_curr = sens.index(self.sensitivity)
         if index_curr > 3:
-            print "Sensitivity already at max (amperage)"
+            print "Can't lower sensitivity. Sensitivity already at max (amperage)"
         else:
             self.set_sensitivity_nanoamps(sens[index_curr+1])
 
     def raise_sensitivity(self):
         index_curr = sens.index(self.sensitivity)
         if index_curr < 1:
-            print "Sensitivity already at min (amperage)"
+            print "Can't raise sensitivity. Sensitivity already at min (amperage)"
         else:
             self.set_sensitivity_nanoamps(sens[index_curr-1])
 
@@ -134,9 +134,6 @@ class SpectrumAnalyzer:
 
         # From http://stackoverflow.com/questions/676172/full-examples-of-using
         # -pyserial-package
-        # send the character to the device
-        # (note that I append a \r\n carriage return and line feed to the
-        # characters - this is requested by my device)
         self.serial.write(input + '\r\n')
         out = ''
         # let's wait one second before reading output (let's give device time
@@ -218,14 +215,10 @@ def dicprint2(adict, mode='n', filename=None):
 def filehandle(adict, name):
     return None
 
-
+    
 # ### TO DO #####
 # do some error handling so loss of data doesnt happen
 # create file writer
-
-def input_thread(L):
-    raw_input()
-    L.append(None)
 
 
 def automode(preamp, spec, voltages):
