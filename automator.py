@@ -26,7 +26,7 @@ class PreAmplifier:
             bytesize=_serial.EIGHTBITS,
         )
         self.bias = None
-        self.sensitivity = -1
+        self.sensitivity = None
 
         portcheck(self.serial)
 
@@ -60,18 +60,22 @@ class PreAmplifier:
         return n
 
     def lower_sensitivity(self):
-        index_curr = sens.index(self.sensitivity)
+        if self.sensitivity is None:
+            self.sensitivity = int(raw_input('What is current (present) sensitivity (nanoAmps)?'))
+        index_curr = self.sens.index(self.sensitivity)
         if index_curr > 3:
             print "Can't lower sensitivity. Sensitivity already at max (amperage)"
         else:
-            self.set_sensitivity_nanoamps(sens[index_curr+1])
+            self.set_sensitivity_nanoamps(self.sens[index_curr+1])
 
     def raise_sensitivity(self):
-        index_curr = sens.index(self.sensitivity)
+        if self.sensitivity is None:
+            self.sensitivity = int(raw_input('What is current (present) sensitivity (nanoAmps)?'))
+        index_curr = self.sens.index(self.sensitivity)
         if index_curr < 1:
             print "Can't raise sensitivity. Sensitivity already at min (amperage)"
         else:
-            self.set_sensitivity_nanoamps(sens[index_curr-1])
+            self.set_sensitivity_nanoamps(self.sens[index_curr-1])
 
     # Clears overload, Never used
     # def clear():
@@ -215,7 +219,7 @@ def dicprint2(adict, mode='n', filename=None):
 def filehandle(adict, name):
     return None
 
-    
+
 # ### TO DO #####
 # do some error handling so loss of data doesnt happen
 # create file writer
