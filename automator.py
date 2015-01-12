@@ -4,6 +4,7 @@
 
 import sys, time, msvcrt
 import serial as _serial
+import numpy
 
 # Must Change COM ports in program to match the ones used
 # in the computer, they change everytime replugged
@@ -328,7 +329,7 @@ if __name__ == '__main__':
     lo = raw_input('Enter minimum voltage:')
     hi = raw_input('Enter maximum voltage:')
     step = raw_input('Enter step value ([1,2,3] has a step value of 1):')
-    data = capture(preamp, spec, range(lo, hi, step))
+    data = capture(preamp, spec, numpy.arange(lo, hi, step))
     fi = raw_input('Enter filename:')
     with open(fi, "w") as f:
         for l in comma_separatify(data):
