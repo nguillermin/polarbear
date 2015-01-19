@@ -4,7 +4,6 @@
 
 import sys, time, msvcrt
 import serial as _serial
-import numpy
 
 # Must Change COM ports in program to match the ones used
 # in the computer, they change everytime replugged
@@ -246,13 +245,16 @@ def automode(preamp, spec, voltages):
     return data
 
 
-def capture(preamp, spec, voltages):
-    data = []
+def capture(preamp, spec, volt_range):
+    data = {}
+    lo, hi, step = volt_range
+    voltages = range(lo, hi, step)
     # progress = ('|','/','--','\\')
     print ">> Hit any key if Pre-Amp overloads (Ctrl-C to cancel)"
     try:
         for i, V in enumerate(voltages):
-            preamp.set_bias_millivolts(V*1000)
+            preamp.set_bias_millivolts(V)
+            print ">> %s" % V
             start_time = time.time()
             while True:
                 if msvcrt.kbhit():
@@ -265,9 +267,11 @@ def capture(preamp, spec, voltages):
                             if c == '=' or c == '+':
                                 preamp.raise_sensitivity()
                                 start_time = time.time()
+                                break
                             elif c == '-' or c == '_':
                                 preamp.lower_sensitivity()
                                 start_time = time.time()
+                                break
                             elif c == ' ':
                                 break
                         if (time.time() - start_time) > 10:
@@ -275,10 +279,10 @@ def capture(preamp, spec, voltages):
                             break
                 if (time.time() - start_time) > 5:
                     break
-            data.append((preamp.sensitivity, spec.getfft().strip()))
+            data[V] = (preamp.sensitivity, spec.getfft().strip())
     except KeyboardInterrupt:
             print ">> Capture cancelled."
-    return {voltages[i]: data[i] for i in range(len(voltages))}
+    return data
 
 ####################
 
