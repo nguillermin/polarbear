@@ -48,6 +48,7 @@ class PreAmplifier:
         # Only using 2*multiples of 10 from nanoAmps(n) to microAmps(u)
         # All possible values are [1,2,5,...1e9,2e9,5e9] picoAmps
         n = -1
+        sens = val
         while val > 1:
             n += 1
             val = val/10
@@ -56,7 +57,7 @@ class PreAmplifier:
             n = str(10+3*n)
             input = "SENS" + n + "\r\n"
             self.serial.write(input)
-            self.sensitivity = val
+            self.sensitivity = sens
         return n
 
     def lower_sensitivity(self):
@@ -65,8 +66,10 @@ class PreAmplifier:
         index_curr = self.sens.index(self.sensitivity)
         if index_curr > 3:
             print "Can't lower sensitivity. Sensitivity already at max (amperage)"
+            return -1
         else:
             self.set_sensitivity_nanoamps(self.sens[index_curr+1])
+            return 0
 
     def raise_sensitivity(self):
         if self.sensitivity is None:
@@ -74,8 +77,10 @@ class PreAmplifier:
         index_curr = self.sens.index(self.sensitivity)
         if index_curr < 1:
             print "Can't raise sensitivity. Sensitivity already at min (amperage)"
+            return -1
         else:
             self.set_sensitivity_nanoamps(self.sens[index_curr-1])
+            return 0
 
     # Clears overload, Never used
     # def clear():
@@ -225,30 +230,40 @@ def filehandle(adict, name):
 # create file writer
 
 
-def automode(preamp, spec, voltages):
+def automode(preamp, spec, volt_range):
     if preamp.bias is None:
         preamp.bias_on()
     # Turn sensitivity to the highest
     preamp.set_sensitivity_nanoamps(20)
 
-    voltages = sorted(voltages)
-    index_zero = voltages.index(0)
-    positive_voltages = voltages[index_zero:]
-    negative_voltages = reversed(voltages[:index_zero+1])
+    lo, hi, step = volt_range
+    voltages = range(lo, hi, step)
+    
+    mid_index = len(voltages)/2
+    while abs(voltages[mid_index - 1]) < abs(voltages[mid_index]):
+        min = voltages[mid_index - 1]
+        mid_index = mid_index - 1
+    while abs(voltages[mid_index + 1]) < abs(voltages[mid_index]):
+        mid_index = mid_index + 1
+        
+    positive_voltages = voltages[mid_index:]
+    negative_voltages = reversed(voltages[:mid_index+1])
 
-    data = []
+    data = {}
+    
+    preamp.set_sensitivity_nanoamps(20)
     print "Capturing ascending positive voltages..."
-    data.append(capture(preamp, spec, positive_voltages))
+    data.update(capture(preamp, spec, positive_voltages))
+    
+    preamp.set_sensitivity_nanoamps(20)
     print "...Capturing descending negative voltages"
-    data.append(reversed(capture(preamp, spec, negative_voltages)))
+    data.update(capture(preamp, spec, negative_voltages))
 
     return data
 
 
-def capture(preamp, spec, volt_range):
+def capture(preamp, spec, voltages):
     data = {}
-    lo, hi, step = volt_range
-    voltages = range(lo, hi, step)
     # progress = ('|','/','--','\\')
     print ">> Hit any key if Pre-Amp overloads (Ctrl-C to cancel)"
     try:
@@ -265,11 +280,13 @@ def capture(preamp, spec, volt_range):
                         if msvcrt.kbhit():
                             c = msvcrt.getch()
                             if c == '=' or c == '+':
-                                preamp.raise_sensitivity()
+                                if preamp.raise_sensitivity() < 0:
+                                    print "Ignore reading? [y/n] [NOT IMPLEMENTED]"
                                 start_time = time.time()
                                 break
                             elif c == '-' or c == '_':
-                                preamp.lower_sensitivity()
+                                if preamp.lower_sensitivity() < 0:
+                                    print "Ignore reading? [y/n] [NOT IMPLEMENTED]"
                                 start_time = time.time()
                                 break
                             elif c == ' ':
@@ -318,10 +335,17 @@ def manual():
 
 def comma_separatify(data):
     out = []
-    for k, v in data:
-        out.append(','.join(k, v[0], v[1], '\n'))
+    for k, v in sorted(data.items()):
+        out.append(','.join([str(k), str(v[0]), str(v[1]), '\n']))
     return out
 
+def save(data,filename):
+    with open(filename, "w") as f:
+        for l in comma_separatify(data):
+            f.write(l)
+        print "Write successful."
+
+    
 # 3.90625
 # #### Test######
 # testy = {"1.0": "1E-4, 2u", "2.0": "200E-4, 20u", "4.0": "2050E-4, 200u"}
