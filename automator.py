@@ -35,9 +35,10 @@ class PreAmplifier:
 
     def bias_on(self):
         self.serial.write("BSON1\n")
-        bias = raw_input('>> What is bias set to (milliVolts)?')
-        # Sanitize input?
-        self.bias = bias
+        if self.bias:
+            bias = raw_input('>> What is bias set to (milliVolts)?')
+            # Sanitize input?
+            self.bias = bias
 
     def set_bias_millivolts(self, mv):
         input = "BSLV" + str(mv) + "\r\n"
@@ -45,6 +46,7 @@ class PreAmplifier:
         self.bias = mv
 
     def set_sensitivity_nanoamps(self, val):
+        # Does no input sanitization at all
         # Only using 2*multiples of 10 from nanoAmps(n) to microAmps(u)
         # All possible values are [1,2,5,...1e9,2e9,5e9] picoAmps
         n = -1
@@ -62,7 +64,7 @@ class PreAmplifier:
 
     def lower_sensitivity(self):
         if self.sensitivity is None:
-            self.sensitivity = int(raw_input('What is current (present) sensitivity (nanoAmps)?'))
+            self.sensitivity = int(raw_input('What is present sensitivity (nanoAmps)?'))
         index_curr = self.sens.index(self.sensitivity)
         if index_curr > 3:
             print "Can't lower sensitivity. Sensitivity already at max (amperage)"
@@ -153,11 +155,6 @@ def value(spec, sen=None, fft=None):
     else:
         value = None
     return value
-
-
-# ### TO DO #####
-# do some error handling so loss of data doesnt happen
-# create file writer
 
 
 def split_voltages(volt_range):
