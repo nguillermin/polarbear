@@ -67,10 +67,11 @@ class PreAmplifier:
             self.sensitivity = int(raw_input('What is present sensitivity (nanoAmps)?'))
         index_curr = self.sens.index(self.sensitivity)
         if index_curr > 3:
-            print "Can't lower sensitivity. Sensitivity already at max (amperage)"
+            print ">> Can't lower sensitivity. Sensitivity already at max (amperage)"
             return -1
         else:
             self.set_sensitivity_nanoamps(self.sens[index_curr+1])
+            print ">> Sensitivity lowered to %s", self.sens[index_curr+1]
         return 0
 
     def raise_sensitivity(self):
@@ -78,10 +79,11 @@ class PreAmplifier:
             self.sensitivity = int(raw_input('What is current (present) sensitivity (nanoAmps)?'))
         index_curr = self.sens.index(self.sensitivity)
         if index_curr < 1:
-            print "Can't raise sensitivity. Sensitivity already at min (amperage)"
+            print ">> Can't raise sensitivity. Sensitivity already at min (amperage)"
             return -1
         else:
             self.set_sensitivity_nanoamps(self.sens[index_curr-1])
+            print ">> Sensitivity raised to %s", self.sens[index_curr-1]
         return 0
 
     # Clears overload, Never used
