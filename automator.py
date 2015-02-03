@@ -71,7 +71,7 @@ class PreAmplifier:
             return -1
         else:
             self.set_sensitivity_nanoamps(self.sens[index_curr+1])
-            print ">> Sensitivity lowered to %s", self.sens[index_curr+1]
+            print ">> Sensitivity lowered to %s" % self.sens[index_curr+1]
         return 0
 
     def raise_sensitivity(self):
@@ -83,7 +83,7 @@ class PreAmplifier:
             return -1
         else:
             self.set_sensitivity_nanoamps(self.sens[index_curr-1])
-            print ">> Sensitivity raised to %s", self.sens[index_curr-1]
+            print ">> Sensitivity raised to %s" % self.sens[index_curr-1]
         return 0
 
     # Clears overload, Never used
@@ -190,7 +190,7 @@ def capture(preamp, spec, volt_range):
                 while True:
                     if msvcrt.kbhit():
                         _ = msvcrt.getch()
-                        print ">> Adjust sensitivity (+/-) and hit Spacebar to resume"
+                        print ">> Adjust sensitivity (+/-) and hit Enter to resume"
                         start_time = time.time()
                         while True:
                             if msvcrt.kbhit():
@@ -199,16 +199,15 @@ def capture(preamp, spec, volt_range):
                                     if preamp.raise_sensitivity() < 0:
                                         print "Ignore reading? [Y/n]"
                                     start_time = time.time()
-                                    break
                                 elif c == '-' or c == '_':
                                     if preamp.lower_sensitivity() < 0:
                                         print "Ignore reading? [Y/n]"
                                     start_time = time.time()
-                                    break
-                                elif c == ' ':
+                                elif c == '\r':
+                                    print ">> Restarting, hit any key if Pre-Amp overloads"
                                     break
                             if (time.time() - start_time) > 10:
-                                print "Restarting on timeout..."
+                                print ">> Restarting on timeout..."
                                 break
                     if (time.time() - start_time) > 5:
                         break
