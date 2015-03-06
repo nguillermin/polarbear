@@ -159,21 +159,12 @@ def value(spec, sen=None, fft=None):
     return value
 
 
-def split_voltages(volt_range):
-    lo, hi, step = volt_range
-    voltages = range(lo, hi, step)
-
-    mid_index = len(voltages)/2
-    while abs(voltages[mid_index - 1]) < abs(voltages[mid_index]):
-        mid_index = mid_index - 1
-    while abs(voltages[mid_index + 1]) < abs(voltages[mid_index]):
-        mid_index = mid_index + 1
-
-    return voltages[mid_index:], reversed(voltages[:mid_index+1])
+def split_voltages(voltages):
+    return [x for x in voltages if x<0], [x for x in voltages if x>=0] 
 
 
-def capture(preamp, spec, volt_range):
-    pos_volts, neg_volts = split_voltages(volt_range)
+def capture(preamp, spec, voltages):
+    neg_volts, pos_volts = split_voltages(voltages)
 
     if preamp.bias is None:
         preamp.bias_on()
@@ -181,7 +172,7 @@ def capture(preamp, spec, volt_range):
     # progress = ('|','/','--','\\')
     print ">> Hit any key if Pre-Amp overloads (Ctrl-C to cancel)"
     try:
-        for voltages in (pos_volts, neg_volts):
+        for voltages in (pos_volts, reversed(neg_volts)):
             preamp.set_sensitivity_nanoamps(20)
             for i, V in enumerate(voltages):
                 preamp.set_bias_millivolts(V)
