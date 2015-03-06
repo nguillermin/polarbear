@@ -172,13 +172,8 @@ def capture(preamp, spec, voltages):
     # progress = ('|','/','--','\\')
     print ">> Hit any key if Pre-Amp overloads (Ctrl-C to cancel)"
     try:
-<<<<<<< HEAD
-        for voltages in (pos_volts, reversed(neg_volts)):
-            preamp.set_sensitivity_nanoamps(20)
-=======
         for voltages in (pos_volts, neg_volts):
             preamp.set_sensitivity_nanoamps(2)
->>>>>>> ea9af10888e0e8ded5dd31c0075cb2485dc6da1f
             for i, V in enumerate(voltages):
                 preamp.set_bias_millivolts(V)
                 print ">> %s" % V
