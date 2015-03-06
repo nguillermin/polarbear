@@ -15,7 +15,7 @@ SR 570 Low-Noise Current Pre-Amplifier
 
 
 class PreAmplifier:
-    sens = (20, 200, 2000, 20000, 200000)
+    sens = (2, 20, 200, 2000, 20000, 200000)
 
     def __init__(self, port):
         self.serial = _serial.Serial(
@@ -172,8 +172,13 @@ def capture(preamp, spec, voltages):
     # progress = ('|','/','--','\\')
     print ">> Hit any key if Pre-Amp overloads (Ctrl-C to cancel)"
     try:
+<<<<<<< HEAD
         for voltages in (pos_volts, reversed(neg_volts)):
             preamp.set_sensitivity_nanoamps(20)
+=======
+        for voltages in (pos_volts, neg_volts):
+            preamp.set_sensitivity_nanoamps(2)
+>>>>>>> ea9af10888e0e8ded5dd31c0075cb2485dc6da1f
             for i, V in enumerate(voltages):
                 preamp.set_bias_millivolts(V)
                 print ">> %s" % V
@@ -200,7 +205,7 @@ def capture(preamp, spec, voltages):
                             if (time.time() - start_time) > 10:
                                 print ">> Restarting on timeout..."
                                 break
-                    if (time.time() - start_time) > 5:
+                    if (time.time() - start_time) > 10:
                         break
                 data[V] = (preamp.sensitivity, spec.getfft().strip())
     except KeyboardInterrupt:
