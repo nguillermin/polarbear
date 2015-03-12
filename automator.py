@@ -200,7 +200,7 @@ def capture(preamp, spec, voltages):
                             if (time.time() - start_time) > 10:
                                 print ">> Restarting on timeout..."
                                 break
-                    if (time.time() - start_time) > 10:
+                    if (time.time() - start_time) > 3:
                         break
                 data[V] = (preamp.sensitivity, spec.getfft().strip())
     except KeyboardInterrupt:
@@ -210,10 +210,10 @@ def capture(preamp, spec, voltages):
 ####################
 
 
-def comma_separatify(data):
+def comma_separatify(data_dict):
     out = []
     for k, v in sorted(data.items()):
-        out.append(','.join([str(k), str(v[0]), str(v[1]), '\n']))
+        out.append(','.join([str(k/1000), str(v[0]), str(v[1])]))
     return out
 
 def save(data,filename):
@@ -222,6 +222,17 @@ def save(data,filename):
             f.write(l)
         print "Write successful."
 
+def save_multiple(datadict_list,filename):
+    voltages_set = set([dd.keys() for dd in datadict_list])
+    with open(filename, 'w') as f:
+        f.write(",".join(["Bias,Sensitivity,Reading" for n in datadict_list]) + "\n")
+        for v in sorted(voltages_set):
+            output = []
+            for ddl in datadict_list:
+                if v in ddl.keys():
+                    output.append(",".join(v,ddl[v][0],ddl[v][1],ddl[v][0]*ddl[v][1]))
+            f.write(",".join(output) + "\n")
+                    
     
 # 3.90625
 # #### Test######
