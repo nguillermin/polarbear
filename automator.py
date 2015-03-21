@@ -117,7 +117,7 @@ class SpectrumAnalyzer:
         self.serial.close()
 
     def getfft(self):
-        input = "SPEC?" + str(self.trace) + "0,154"
+        input = "SPEC?" + str(self.trace) + "0,091"
 
         # From http://stackoverflow.com/questions/676172/full-examples-of-using
         # -pyserial-package
@@ -160,7 +160,7 @@ def value(spec, sen=None, fft=None):
 
 
 def split_voltages(voltages):
-    return [x for x in voltages if x<0], [x for x in voltages if x>=0] 
+    return reversed([x for x in voltages if x<0]), [x for x in voltages if x>=0] 
 
 
 def capture(preamp, spec, voltages):
@@ -172,9 +172,9 @@ def capture(preamp, spec, voltages):
     # progress = ('|','/','--','\\')
     print ">> Hit any key if Pre-Amp overloads (Ctrl-C to cancel)"
     try:
-        for voltages in (pos_volts, neg_volts):
+        for volts in (pos_volts, neg_volts):
             preamp.set_sensitivity_nanoamps(2)
-            for i, V in enumerate(voltages):
+            for i, V in enumerate(volts):
                 preamp.set_bias_millivolts(V)
                 print ">> %s" % V
                 start_time = time.time()
@@ -212,25 +212,32 @@ def capture(preamp, spec, voltages):
 
 def comma_separatify(data_dict):
     out = []
-    for k, v in sorted(data.items()):
-        out.append(','.join([str(k/1000), str(v[0]), str(v[1])]))
+    for k, v in sorted(data_dict.items()):
+        print k
+        out.append(','.join([str(k), str(v[0]), str(v[1]), str(int(v[0])*float(v[1])) ]))
     return out
 
 def save(data,filename):
     with open(filename, "w") as f:
         for l in comma_separatify(data):
-            f.write(l)
+            f.write(l+'\n')
         print "Write successful."
 
 def save_multiple(datadict_list,filename):
-    voltages_set = set([dd.keys() for dd in datadict_list])
+    all_voltages = []
+    for ddl in datadict_list:
+        all_voltages.extend(ddl.keys())
+    voltages_set = set(all_voltages)
     with open(filename, 'w') as f:
-        f.write(",".join(["Bias,Sensitivity,Reading" for n in datadict_list]) + "\n")
+        f.write(",".join(["Bias,Sensitivity,Reading,Value," for n in datadict_list]) + "\n")
         for v in sorted(voltages_set):
             output = []
             for ddl in datadict_list:
                 if v in ddl.keys():
-                    output.append(",".join(v,ddl[v][0],ddl[v][1],ddl[v][0]*ddl[v][1]))
+                    line = map(str,[v,ddl[v][0],ddl[v][1],ddl[v][0]*float(ddl[v][1])])
+                    output.append(",".join(line))
+                else:
+                    output.append(',,,')
             f.write(",".join(output) + "\n")
                     
     
