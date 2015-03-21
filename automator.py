@@ -245,7 +245,7 @@ def save_multiple(datadict_list,filename):
         all_voltages.extend(ddl.keys())
     voltages_set = set(all_voltages)
     with open(filename, 'w') as f:
-        f.write(",".join(["Bias,Sensitivity,Reading,Value," for n in datadict_list]) + "\n")
+        f.write(",".join(["Bias,Sensitivity,Reading,Value,," for n in datadict_list]) + "\n")
         for v in sorted(voltages_set):
             output = []
             for ddl in datadict_list:
