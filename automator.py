@@ -116,7 +116,23 @@ class SpectrumAnalyzer:
     def __del__(self):
         self.serial.close()
 
+    def setMeasureType(self):
+        # MEAS?g{,i} where i selects 0:Spectrum; 1:PSD; 2,3 are Time Record
+        # and Octave (not used by us)
+        pass
+
+    def getWindow(self):
+        # Get the window (starting frequency, center frequency, linewidth)
+        # of the Spec.
+        # Use SPAN?{i}, STRF?{i}, CTRF?{i} commands
+        # Possibly use BVAL? command to just get marker frequency?
+        pass
+
     def getfft(self):
+        # The following command asks for the value of a bin i, 0<i<399
+        # In this case the value is 154 (out of 399)
+        # The frequency whose value is thus captured therefore depends
+        # on the window size of the of the Spec.
         input = "SPEC?" + str(self.trace) + "0,154"
 
         # From http://stackoverflow.com/questions/676172/full-examples-of-using
