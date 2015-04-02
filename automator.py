@@ -110,16 +110,18 @@ class SpectrumAnalyzer:
             bytesize=_serial.EIGHTBITS,
         )
         self.trace = 0
+        self.measure = None
 
         portcheck(self.serial)
 
     def __del__(self):
         self.serial.close()
 
-    def setMeasureType(self):
+    def setMeasureType(self,mtype):
         # MEAS?g{,i} where i selects 0:Spectrum; 1:PSD; 2,3 are Time Record
         # and Octave (not used by us)
-        pass
+        self.serial.write("MEAS" + str(self.trace) + "," + str(mtype))
+        self.measure = mtype
 
     def getWindow(self):
         # Get the window (starting frequency, center frequency, linewidth)
