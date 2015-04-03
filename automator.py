@@ -144,11 +144,12 @@ class SpectrumAnalyzer:
         # let's wait one second before reading output (let's give device time
         # to answer)
         time.sleep(1)
-        while self.serial.inWaiting() > 0:
-            out += self.serial.read(1)
-            
-        if out != '':
-            return out
+        while out!=None:
+            while self.serial.inWaiting() > 0:
+                out += self.serial.read(1)
+                
+            if out != '':
+                return out
 
     def identify(self):
         self.serial.write("*IDN?\r\n")
