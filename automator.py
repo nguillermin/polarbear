@@ -66,7 +66,7 @@ class PreAmplifier:
         if self.sensitivity is None:
             self.sensitivity = int(raw_input('What is present sensitivity (nanoAmps)?'))
         index_curr = self.sens.index(self.sensitivity)
-        if index_curr > 3:
+        if index_curr > len(self.sens)-2:
             print ">> Can't lower sensitivity. Sensitivity already at max (amperage)"
             return -1
         else:
@@ -135,7 +135,7 @@ class SpectrumAnalyzer:
         # In this case the value is 91 (out of 399)
         # The frequency whose value is thus captured therefore depends
         # on the window size of the of the Spec.
-        input = "SPEC?" + str(self.trace) + "0,091"
+        input = "SPEC?" + str(self.trace) + "0,154"
 
         # From http://stackoverflow.com/questions/676172/full-examples-of-using
         # -pyserial-package
@@ -146,7 +146,7 @@ class SpectrumAnalyzer:
         time.sleep(1)
         while self.serial.inWaiting() > 0:
             out += self.serial.read(1)
-
+            
         if out != '':
             return out
 
@@ -206,11 +206,11 @@ def capture(preamp, spec, voltages):
                                 c = msvcrt.getch()
                                 if c == '=' or c == '+':
                                     if preamp.raise_sensitivity() < 0:
-                                        print "Ignore reading? [Y/n]"
+                                        print "Max sensitivity, hit Ctrl-C to cancel reading or Enter to continue"
                                     start_time = time.time()
                                 elif c == '-' or c == '_':
                                     if preamp.lower_sensitivity() < 0:
-                                        print "Ignore reading? [Y/n]"
+                                        print "Max sensitivity, hit Ctrl-C to cancel reading or Enter to continue"
                                     start_time = time.time()
                                 elif c == '\r':
                                     print ">> Restarting, hit any key if Pre-Amp overloads"
@@ -232,7 +232,7 @@ def comma_separatify(data_dict):
     out = []
     for k, v in sorted(data_dict.items()):
         print k
-        out.append(','.join([str(k), str(v[0]), str(v[1]), str(int(v[0])*float(v[1])) ]))
+        out.append(','.join([str(k), str(v[0]), str(v[1]), str(v[0]*float(v[1]) ]))
     return out
 
 def save(data,filename):
