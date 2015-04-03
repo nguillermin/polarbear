@@ -210,7 +210,7 @@ def capture(preamp, spec, voltages):
                                     start_time = time.time()
                                 elif c == '-' or c == '_':
                                     if preamp.lower_sensitivity() < 0:
-                                        print "Max sensitivity, hit Ctrl-C to cancel reading or Enter to continue"
+                                        print "Min sensitivity, hit Ctrl-C to cancel reading or Enter to continue"
                                     start_time = time.time()
                                 elif c == '\r':
                                     print ">> Restarting, hit any key if Pre-Amp overloads"
