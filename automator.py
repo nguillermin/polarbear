@@ -131,9 +131,9 @@ class SpectrumAnalyzer:
         self.freq_span = self.serial.send('SPAN?')
         self.start_freq = self.serial.send('STRF?')
 
-        if (self.span > 0) or (self.start_freq) >  0):
+        if (self.span > 0) or (self.start_freq > 0):
             return 1
-        else
+        else:
             return 0
 
     def getFFT(self,freq):
@@ -141,7 +141,7 @@ class SpectrumAnalyzer:
         # In this case the value is 91 (out of 399)
         # The frequency whose value is thus captured therefore depends
         # on the window size of the of the Spec.
-        if !self.getWindow():
+        if not self.getWindow():
             return -1 
         if freq - self.start_freq < 0 or freq - self.start_freq > self.freq_span:
             print freq, " is outside of spectrum window."
