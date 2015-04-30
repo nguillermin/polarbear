@@ -139,20 +139,14 @@ class SpectrumAnalyzer:
 
         # From http://stackoverflow.com/questions/676172/full-examples-of-using
         # -pyserial-package
-        self.serial.write(input + '\r\n')
-        out = ''
-        # let's wait one second before reading output (let's give device time
-        # to answer)
-        time.sleep(1)
-        while out!=None:
-            while self.serial.inWaiting() > 0:
-                out += self.serial.read(1)
-                
-            if out != '':
-                return out
+        return self.send(input)
 
     def identify(self):
-        self.serial.write("*IDN?\r\n")
+        return self.send('*IDN?')
+          
+    def send(self,msg):
+        msg = msg + '\r\n'
+        self.serial.write(msg)
         out = ''
         time.sleep(1)
         while self.serial.inWaiting() > 0:
@@ -233,7 +227,7 @@ def comma_separatify(data_dict):
     out = []
     for k, v in sorted(data_dict.items()):
         print k
-        out.append(','.join([str(k), str(v[0]), str(v[1]), str(v[0]*float(v[1]) ]))
+        out.append(','.join([str(k), str(v[0]), str(v[1]), str(v[0]*float(v[1]))]))
     return out
 
 def save(data,filename):
