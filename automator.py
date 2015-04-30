@@ -128,8 +128,8 @@ class SpectrumAnalyzer:
         # of the Spec.
         # Use SPAN?{i}, STRF?{i}, CTRF?{i} commands
         # Possibly use BVAL? command to just get marker frequency?
-        self.freq_span = self.serial.send('SPAN?')
-        self.start_freq = self.serial.send('STRF?')
+        self.freq_span = self.send('SPAN?')
+        self.start_freq = self.send('STRF?')
 
         if (self.span > 0) or (self.start_freq > 0):
             return 1
@@ -156,7 +156,7 @@ class SpectrumAnalyzer:
 
         # From http://stackoverflow.com/questions/676172/full-examples-of-using
         # -pyserial-package
-        return self.send(input)
+        return self.send(msg)
 
     def identify(self):
         return self.send('*IDN?')
@@ -169,7 +169,7 @@ class SpectrumAnalyzer:
         while self.serial.inWaiting() > 0:
             out += self.serial.read(1)
         if out != '':
-            return out
+            return out.rstrip()
 
 
 def portcheck(ser):
