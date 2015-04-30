@@ -124,18 +124,35 @@ class SpectrumAnalyzer:
         self.measure = mtype
 
     def getWindow(self):
-        # Get the window (starting frequency, center frequency, linewidth)
+        # Get the window (starting frequency, center frequency, frequency span)
         # of the Spec.
         # Use SPAN?{i}, STRF?{i}, CTRF?{i} commands
         # Possibly use BVAL? command to just get marker frequency?
-        pass
+        self.freq_span = self.serial.send('SPAN?')
+        self.start_freq = self.serial.send('STRF?')
 
-    def getfft(self):
+        if (self.span > 0) or (self.start_freq) >  0):
+            return 1
+        else
+            return 0
+
+    def getFFT(self,freq):
         # The following command asks for the value of a bin i, 0<i<399
         # In this case the value is 91 (out of 399)
         # The frequency whose value is thus captured therefore depends
         # on the window size of the of the Spec.
-        input = "SPEC?" + str(self.trace) + "0,154"
+        if !self.getWindow():
+            return -1 
+        if freq - self.start_freq < 0 or freq - self.start_freq > self.freq_span:
+            print freq, " is outside of spectrum window."
+            # TODO: Offer choice to set window correctly?
+            return 0
+        else:
+            i = self.freq_span/400
+            difference = freq - self.start_freq
+            nbin = str(int(difference // i)).zfill(3)
+
+            msg = "SPEC?" + str(self.trace) + "0," + nbin 
 
         # From http://stackoverflow.com/questions/676172/full-examples-of-using
         # -pyserial-package
