@@ -5,3 +5,5 @@
 # Automatic marker selection (read start freq and center freq and find proper bin for 600Hz reading)
 
 # Fix error crash when 'Calibrating Output' appears
+#
+# Offer choice to set window correctly?
