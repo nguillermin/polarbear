@@ -128,13 +128,21 @@ class SpectrumAnalyzer:
         # of the Spec.
         # Use SPAN?{i}, STRF?{i}, CTRF?{i} commands
         # Possibly use BVAL? command to just get marker frequency?
-        self.freq_span = self.send('SPAN?')
-        self.start_freq = self.send('STRF?')
+        self.freq_span = self.getSpan()
+        self.start_freq = 1000*int(self.send('STRF?'))
 
-        if (self.span > 0) or (self.start_freq > 0):
+        if (self.freq_span > 0) or (self.start_freq > 0):
             return 1
         else:
             return 0
+            
+    def getSpan(self):
+        sp = (191,382,763,1500,3100,6100,12200,24400,48750,97500,195000,\
+              390000,780000,1560000,3125000,6250000,12500000,25000000,\
+              50000000,100000000)
+        
+        i = int(self.send('SPAN?'))
+        return sp[i]
 
     def getFFT(self,freq):
         # The following command asks for the value of a bin i, 0<i<399
@@ -149,13 +157,14 @@ class SpectrumAnalyzer:
             return 0
         else:
             i = self.freq_span/400
-            difference = freq - self.start_freq
+            difference = (1000*freq) - self.start_freq
             nbin = str(int(difference // i)).zfill(3)
 
             msg = "SPEC?" + str(self.trace) + "0," + nbin 
 
         # From http://stackoverflow.com/questions/676172/full-examples-of-using
         # -pyserial-package
+        
         return self.send(msg)
 
     def identify(self):
@@ -166,10 +175,15 @@ class SpectrumAnalyzer:
         self.serial.write(msg)
         out = ''
         time.sleep(1)
+        calibrating = False
         while self.serial.inWaiting() > 0:
             out += self.serial.read(1)
-        if out != '':
+        if out != '' and out is not None:
             return out.rstrip()
+        else:
+            print 'Calibrating Offset...'
+            time.sleep(15)
+            return self.send(msg)
 
 
 def portcheck(ser):
@@ -232,7 +246,7 @@ def capture(preamp, spec, voltages):
                                 break
                     if (time.time() - start_time) > 3:
                         break
-                data[V] = (preamp.sensitivity, spec.getfft().strip())
+                data[V] = (preamp.sensitivity, spec.getFFT(602))
     except KeyboardInterrupt:
             print ">> Capture cancelled."
     return data
