@@ -45,3 +45,10 @@ Temporary Items
 
 # Python compiled files
 *.pyc
+
+# iPython notebooks and files
+*.ipynb
+*.ipynb_checkpoints/
+
+# Test files
+FTIR_testdata/
