@@ -137,8 +137,8 @@ class SpectrumAnalyzer:
             return 0
             
     def getSpan(self):
-        sp = (191,382,763,1500,3100,6100,12200,24400,48750,97500,195000,\
-              390000,780000,1560000,3125000,6250000,12500000,25000000,\
+        sp = (191,382,763,1500,3100,6100,12200,24400,48750,97500,195000,
+              390000,780000,1560000,3125000,6250000,12500000,25000000,
               50000000,100000000)
         
         i = int(self.send('SPAN?'))
@@ -159,6 +159,7 @@ class SpectrumAnalyzer:
             i = self.freq_span/400
             difference = (1000*freq) - self.start_freq
             nbin = str(int(difference // i)).zfill(3)
+            print nbin
 
             msg = "SPEC?" + str(self.trace) + "0," + nbin 
 
