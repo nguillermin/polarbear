@@ -270,7 +270,7 @@ def comma_separatify(data_dict):
     out = []
     for k, v in sorted(data_dict.items()):
         print k
-        out.append(','.join([str(k), str(v[0]), str(v[1]), str(v[0]*float(v[1]))]))
+        out.append(','.join([str(k), str(v[0]), str(v[1]), str(v[0]*float(v[1])),'']))
     return out
 
 def save(data,filename):
@@ -282,7 +282,7 @@ def save(data,filename):
 def save_multiple(datadict_list,filename):
     voltages_set = set(chain(*[ddl.keys() for ddl in datadict_list]))
     # From http://stackoverflow.com/questions/952914/making-a-flat-list-out-of-list-of-lists-in-python
-    with open(filename, 'w') as f:
+    with open(filename, 'a') as f:
         f.write(",".join(["Bias,Sensitivity,Reading,Value,," for n in datadict_list]) + "\n")
         for v in sorted(voltages_set):
             output = []
@@ -293,7 +293,8 @@ def save_multiple(datadict_list,filename):
                 else:
                     output.append(',,,')
             f.write(",".join(output) + "\n")
-                    
+        print "Write successful."
+        
     
 # 3.90625
 # #### Test######
