@@ -160,7 +160,6 @@ class SpectrumAnalyzer:
             i = self.freq_span/400
             difference = (1000*freq) - self.start_freq
             nbin = str(int(difference // i)).zfill(3)
-            print nbin
 
             msg = "SPEC?" + str(self.trace) + "0," + nbin 
 
@@ -168,11 +167,21 @@ class SpectrumAnalyzer:
         # -pyserial-package
         
         return self.send(msg)
+        
+    def getAverage(self,freq,count)
+        self.serial.write('AVGO1\r\n')
+        self.serial.write('NAVG'+str(count)+'\r\n')
+        self.serial.write('STRT\r\n')
+        time.sleep(0.025*count)
+        return self.getFFT(freq)
+        
 
     def identify(self):
         return self.send('*IDN?')
-          
+        
+        
     def send(self,msg):
+    # Shocking realization...if the command has ? in it then it expects an answer
         msg = msg + '\r\n'
         self.serial.write(msg)
         out = ''
