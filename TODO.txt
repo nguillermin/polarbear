@@ -2,8 +2,6 @@
 #
 # "SR760 supports CTS/DTR hardware handshaking"
 
-# Automatic marker selection (read start freq and center freq and find proper bin for 600Hz reading)
-
 # Offer choice to set window correctly?
 #
 # 'set_sensitivity_nanoamps' does no input validation at all

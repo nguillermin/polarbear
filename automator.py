@@ -269,9 +269,7 @@ def save(data,filename):
         print "Write successful."
 
 def save_multiple(datadict_list,filename):
-    all_voltages = []
-    for ddl in datadict_list:
-        all_voltages.extend(ddl.keys())
+    all_voltages = [ddl.keys() for ddl in datadict_list]
     voltages_set = set(all_voltages)
     with open(filename, 'w') as f:
         f.write(",".join(["Bias,Sensitivity,Reading,Value,," for n in datadict_list]) + "\n")
