@@ -4,6 +4,7 @@
 
 import sys, time, msvcrt
 import serial as _serial
+from itertools import chain
 
 # Must Change COM ports in program to match the ones used
 # in the computer, they change everytime replugged
@@ -184,6 +185,7 @@ class SpectrumAnalyzer:
         else:
             print 'Calibrating Offset...'
             time.sleep(15)
+            self.flushOutput()
             return self.send(msg)
 
 
@@ -269,8 +271,8 @@ def save(data,filename):
         print "Write successful."
 
 def save_multiple(datadict_list,filename):
-    all_voltages = [ddl.keys() for ddl in datadict_list]
-    voltages_set = set(all_voltages)
+    voltages_set = set(chain(*[ddl.keys() for ddl in datadict_list]))
+    # From http://stackoverflow.com/questions/952914/making-a-flat-list-out-of-list-of-lists-in-python
     with open(filename, 'w') as f:
         f.write(",".join(["Bias,Sensitivity,Reading,Value,," for n in datadict_list]) + "\n")
         for v in sorted(voltages_set):
