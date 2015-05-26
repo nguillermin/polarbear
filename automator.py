@@ -163,9 +163,6 @@ class SpectrumAnalyzer:
 
             msg = "SPEC?" + str(self.trace) + "0," + nbin 
 
-        # From http://stackoverflow.com/questions/676172/full-examples-of-using
-        # -pyserial-package
-        
         return self.send(msg)
         
     def getAverage(self,freq,count)
@@ -181,7 +178,11 @@ class SpectrumAnalyzer:
         
         
     def send(self,msg):
+    # From http://stackoverflow.com/questions/676172/full-examples-of-using
+    # -pyserial-package
+    
     # Shocking realization...if the command has ? in it then it expects an answer
+    # Otherwise, it doesn't (so, use serial.write for ? and .send for the rest))
         msg = msg + '\r\n'
         self.serial.write(msg)
         out = ''
@@ -204,15 +205,6 @@ def portcheck(ser):
         ser.flushOutput()
         ser.close()
     ser.open()
-
-
-# Get Sensitivity times fft value
-def value(spec, sen=None, fft=None):
-    if sen is None:
-        value = float(spec.getfft()) * senreal[sensitivity]
-    else:
-        value = None
-    return value
 
 
 def split_voltages(voltages):
