@@ -20,13 +20,14 @@ for d in sys.argv[1:]:
         headers = concat([DataFrame(columns=['Bias'],dtype='float'),
                           DataFrame(columns=['Sensitivity'],dtype='int')])
         for f in pfiles:
-            match = re.search(r'Sen\s*=\s*([0-9]*)\s*([nNuU]A*)',f)
+            match = re.search(r'Sen\s*=\s*([0-9]*)\s*([nu]A)',f)
             if match:
                 m = match.groups()
-                units = {'nA':1,'uA':1000,'N':1,'U':1000}
+                units = {'nA':1,'uA':1000}
                 sens = int(m[0]) * units[m[1]]
+                
             else:
-                print 'ERROR:', f
+                print f
 
             bias = re.search(r'Bias\s*=\s*(-*[0-9]*\.*[0-9]*)\s*V',f)
             if bias:
@@ -37,21 +38,39 @@ for d in sys.argv[1:]:
             headers = headers.append(DataFrame([[bias,sens]],columns=headers.columns),
                                      ignore_index=True)
 
-        dfs = [read_csv(os.path.join(d,pf),
+        dfs = [read_csv(os.path.join(toplevelname,pf),
                         '\t',header=None) for pf in pfiles]
         for i, df in enumerate(dfs):
-            df[1] = df[1]*headers['Sensitivity'].iloc[i]   
-        
+            df[1] = df[1]*headers['Sensitivity'].iloc[i]
+            
         headers = headers.sort(columns='Bias')
+        
+        data = concat([dfs[i] for i in headers.index],axis=1)
 
-        dfs = concat([dfs[i] for i in headers.index],axis=1)
+        outxls = os.path.join(os.path.dirname(toplevelname),p+'.xlsx')
         
-        headers = headers.transpose()
-        empty = ['' for x in range(len(headers.columns))]
-        hc = headers.columns
-        newcols = [x for t in zip(*[empty,hc]) for x in t]
-        headers = headers.reindex(columns=newcols)
+        workbook = xlsxwriter.Workbook(outxls)
+        worksheet = workbook.add_worksheet('Sheet1')
         
-        out = os.path.join(prev_dir,'_'.join([top,p+'.csv']))
-        headers.to_csv(out,mode='w',header=None,na_rep='')
-        dfs.to_csv(out,mode='a',header=None,na_rep='')
+        worksheet.write(0, 0, 'Bias')
+        worksheet.write(1, 0, 'Sensitivity')
+
+        chart = workbook.add_chart({'type': 'scatter'})
+        for i, h in enumerate(headers.index):
+            worksheet.write_number(0, 2*i+2, headers['Bias'][h])
+            worksheet.write_number(1, 2*i+2, headers['Sensitivity'][h])
+            for r, row in dfs[h].iterrows():
+                for c, col in enumerate(row):
+                    worksheet.write_number(r+2, 2*i+c+1, row[c])
+        
+            l = len(dfs[h])
+            chart.add_series({
+                    'name': str(headers['Bias'][h]),
+                    'categories': ['Sheet1', 2, 1, l+1, 1],
+                    'values': ['Sheet1', 2, 2, l+1, 2],
+                })
+        # Set style smooth line no markers
+        chart5.set_style(15)
+        worksheet.insert_chart('B3', chart)
+            
+        workbook.close()
