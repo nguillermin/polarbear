@@ -36,10 +36,10 @@ class PreAmplifier:
 
     def bias_on(self):
         self.serial.write("BSON1\n")
-        if self.bias:
-            bias = raw_input('>> What is bias set to (milliVolts)?')
+        if self.bias is None:
+            bias = raw_input('>> What is bias set to (milliVolts)?\n')
             # Sanitize input?
-            self.bias = bias
+            self.bias = int(bias)
 
     def bias_off(self):
         self.serial.write("BSON0\n")
@@ -150,13 +150,13 @@ class SpectrumAnalyzer:
         return sp[i]
 
     def getFFT(self,freq):
-        # The following command asks for the value of a bin i, 0<i<399
-        # In this case the value is 91 (out of 399)
-        # The frequency whose value is thus captured therefore depends
-        # on the window size of the of the Spec.
+        # The following command asks for the value of a frequency. The frequency span
+        # of the window is split into 400 bins, 0<i<399
+        # The bin whose value is thus captured therefore depends
+        # on the window size of the Spec.
         if not self.getWindow():
-            return -1 
-        if freq - self.start_freq < 0 or freq - self.start_freq > self.freq_span:
+            return -1
+        if freq - self.start_freq < 0 or freq > self.start_freq + self.freq_span:
             print freq, " is outside of spectrum window."
             # TODO: Offer choice to set window correctly?
             return 0
@@ -254,7 +254,7 @@ def capture(preamp, spec, voltages):
                                 break
                     if (time.time() - start_time) > 3:
                         break
-                data[V] = (preamp.sensitivity, spec.getFFT(602))
+                data[V] = (preamp.sensitivity, spec.getFFT(600))
     except KeyboardInterrupt:
             print ">> Capture cancelled."
     return data
@@ -297,15 +297,18 @@ def save_multiple(datadict_list,filename):
 # testy = {"1.0": "1E-4, 2u", "2.0": "200E-4, 20u", "4.0": "2050E-4, 200u"}
 
 if __name__ == '__main__':
-    spec = SpectrumAnalyzer('COM4')
-    preamp = PreAmplifier('COM5')
+    ports = ['COM4','COM5']
+    for i, com in enumerate(ports):
+        spec = SpectrumAnalyzer(com)
+        if spec.identify()=='Stanford_Research_Systems,SR760,s/n14155,ver138':
+            print "SpectrumAnalyzer using " + com
+            del ports[i]
+            break
+        else:
+            print "SpectrumAnalyzer failed to identify. Trying next port."
+            del spec
+    preamp = PreAmplifier(ports[0])
+    print "PreAmplifier using " + ports[0]
 
-    lo = raw_input('Enter minimum voltage:')
-    hi = raw_input('Enter maximum voltage:')
-    step = raw_input('Enter step value ([1,2,3] has a step value of 1):')
-    data = capture(preamp, spec, numpy.arange(lo, hi, step))
-    fi = raw_input('Enter filename:')
-    with open(fi, "w") as f:
-        for l in comma_separatify(data):
-            f.write(l)
-        print "Write successful."
+    del spec
+    del preamp
