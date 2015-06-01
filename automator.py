@@ -41,6 +41,10 @@ class PreAmplifier:
             # Sanitize input?
             self.bias = bias
 
+    def bias_off(self):
+        self.serial.write("BSON0\n")
+        self.bias = None
+
     def set_bias_millivolts(self, mv):
         input = "BSLV" + str(mv) + "\r\n"
         self.serial.write(input)
