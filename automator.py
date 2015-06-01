@@ -165,7 +165,7 @@ class SpectrumAnalyzer:
 
         return self.send(msg)
         
-    def getAverage(self,freq,count)
+    def getAverage(self,freq,count):
         self.serial.write('AVGO1\r\n')
         self.serial.write('NAVG'+str(count)+'\r\n')
         self.serial.write('STRT\r\n')
