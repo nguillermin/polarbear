@@ -27,7 +27,7 @@ for d in sys.argv[1:]:
                 sens = int(m[0]) * units[m[1]]
                 
             else:
-                print f
+                print "Sensitivity not found in filename ", f
 
             bias = re.search(r'Bias\s*=\s*(-*[0-9]*\.*[0-9]*)\s*V',f)
             if bias:
