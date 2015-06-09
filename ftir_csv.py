@@ -21,7 +21,7 @@ for d in sys.argv[1:]:
         headers = concat([DataFrame(columns=['Bias'],dtype='float'),
                           DataFrame(columns=['Sensitivity'],dtype='int')])
         for f in pfiles:
-            match = re.search(r'Sen\s*=\s*([0-9]*)\s*([nNuU][aA]*)',f)
+            match = re.search(r'(?:Sen|Sens)\s*=\s*([0-9]*)\s*([nNuU][aA]*)',f)
             if match:
                 m = match.groups()
                 units = {'n':1,'u':1000}
@@ -31,7 +31,7 @@ for d in sys.argv[1:]:
             else:
                 print "Sensitivity not found in filename ", f
 
-            bias = re.search(r'[Bias|V]\s*=\s*(-*[0-9]*\.*[0-9]*)\s*V',f)
+            bias = re.search(r'(?:Bias|V)\s*=\s*(-*[0-9]*\.*[0-9]*)\s*V',f)
             if bias:
                 bias = float(bias.group(1))
             else:
