@@ -33,7 +33,7 @@ for d in sys.argv[1:]:
             if bias:
                 bias = float(bias.group(1))
             else:
-                print f
+                print "Bias not found in filename ", f
             # I guess this is why people don't like using regexes...
             headers = headers.append(DataFrame([[bias,sens]],columns=headers.columns),
                                      ignore_index=True)
