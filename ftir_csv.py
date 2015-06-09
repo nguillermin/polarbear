@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# FTIR data munging script
+# FTIR data munging and Excel export 
 
 import sys, os, re
 from pandas import read_csv, DataFrame, concat
