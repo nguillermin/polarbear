@@ -6,7 +6,7 @@ import sys, os, re
 from pandas import read_csv, DataFrame, concat
 
 for d in sys.argv[1:]:
-    top = os.path.basename(d)
+    toplevelname = os.path.basename(d)
     prev_dir = os.path.dirname(d)
     filelist = [f for f in os.listdir(d) if f[-4:].upper()=='.DPT']
 
@@ -40,7 +40,7 @@ for d in sys.argv[1:]:
                                      ignore_index=True)
 
         dfs = [read_csv(os.path.join(toplevelname,pf),
-                        '\t',header=None) for pf in pfiles]
+                        sep=',',dtype='float',header=None) for pf in pfiles]
         for i, df in enumerate(dfs):
             df[1] = df[1]*headers['Sensitivity'].iloc[i]
             
