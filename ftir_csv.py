@@ -4,6 +4,7 @@
 
 import sys, os, re
 from pandas import read_csv, DataFrame, concat
+import xlsxwriter
 
 for d in sys.argv[1:]:
     toplevelname = os.path.basename(d)
@@ -71,7 +72,7 @@ for d in sys.argv[1:]:
                     'values': ['Sheet1', 2, 2, l+1, 2],
                 })
         # Set style smooth line no markers
-        chart5.set_style(15)
+        chart.set_style(15)
         worksheet.insert_chart('B3', chart)
             
         workbook.close()
