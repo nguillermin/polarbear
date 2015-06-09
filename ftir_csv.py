@@ -68,11 +68,11 @@ for d in sys.argv[1:]:
             l = len(dfs[h])
             chart.add_series({
                     'name': str(headers['Bias'][h]),
-                    'categories': ['Sheet1', 2, 1, l+1, 1],
-                    'values': ['Sheet1', 2, 2, l+1, 2],
+                    'categories': ['Sheet1', 2, 2*i+1, l+1, 2*i+1],
+                    'values': ['Sheet1', 2, 2*i+2, l+1, 2*i+2],
                 })
         # Set style smooth line no markers
-        chart.set_style(15)
+        chart.set_style(11)
         worksheet.insert_chart('B3', chart)
             
         workbook.close()
