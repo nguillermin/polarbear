@@ -67,7 +67,7 @@ for d in sys.argv[1:]:
         
             l = len(dfs[h])
             chart.add_series({
-                    'name': str(headers['Bias'][h]),
+                    'name': ['Sheet1', 0, 2*i+2],
                     'categories': ['Sheet1', 2, 2*i+1, l+1, 2*i+1],
                     'values': ['Sheet1', 2, 2*i+2, l+1, 2*i+2],
                 })
