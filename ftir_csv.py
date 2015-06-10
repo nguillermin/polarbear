@@ -57,7 +57,7 @@ for d in sys.argv[1:]:
         worksheet.write(0, 0, 'Bias')
         worksheet.write(1, 0, 'Sensitivity')
 
-        chart = workbook.add_chart({'type': 'scatter'})
+        chart = workbook.add_chart({'type': 'scatter', 'subtype':'smooth'})
         for i, h in enumerate(headers.index):
             worksheet.write_number(0, 2*i+2, headers['Bias'][h])
             worksheet.write_number(1, 2*i+2, headers['Sensitivity'][h])
@@ -72,7 +72,7 @@ for d in sys.argv[1:]:
                     'values': ['Sheet1', 2, 2*i+2, l+1, 2*i+2],
                 })
         # Set style smooth line no markers
-        chart.set_style(11)
+        chart.set_style(2)
         worksheet.insert_chart('B3', chart)
             
         workbook.close()
