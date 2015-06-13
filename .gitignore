@@ -51,4 +51,7 @@ Temporary Items
 *.ipynb_checkpoints/
 
 # Test files
-FTIR_testdata/
+Data
+
+# database file
+polarbear.db
