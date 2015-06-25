@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 # Author: Nicholas Weir, Nils Guillermin
 # Date: 6/5/14
 # Purpose: Cutting I-V measurements time from hours to minutes
