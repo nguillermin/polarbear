@@ -7,8 +7,7 @@ from pandas import read_csv, DataFrame, concat
 import xlsxwriter
 
 for d in sys.argv[1:]:
-    toplevelname = os.path.basename(d)
-    prev_dir = os.path.dirname(d)
+    toplevelname = d.rstrip('/')
     filelist = [f for f in os.listdir(d) if f[-4:].upper()=='.DPT']
 
     ports = set([re.search(r'Port\s*[0-9]',f).group() for f in filelist])
@@ -49,7 +48,7 @@ for d in sys.argv[1:]:
         
         data = concat([dfs[i] for i in headers.index],axis=1)
 
-        outxls = os.path.join(os.path.dirname(toplevelname),p+'.xlsx')
+        outxls = os.path.join(toplevelname,p+'.xlsx')
         
         workbook = xlsxwriter.Workbook(outxls)
         worksheet = workbook.add_worksheet('Sheet1')
