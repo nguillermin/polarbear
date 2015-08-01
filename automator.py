@@ -6,6 +6,14 @@ import sys, time, msvcrt
 import serial as _serial
 from itertools import chain
 
+if sys.platform == 'nt':
+    import msvcrt
+elif sys.platform == 'darwin':
+    print "You're on OS X!"
+else:
+    print "Platform not supported."
+    sys.exit(0)
+
 # Must Change COM ports in program to match the ones used
 # in the computer, they change everytime replugged
 
