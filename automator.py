@@ -26,8 +26,8 @@ class PreAmplifier:
             stopbits=_serial.STOPBITS_TWO,
             bytesize=_serial.EIGHTBITS,
         )
-        self.bias = None
-        self.sensitivity = None
+        self.__bias = None
+        self.__sensitivity = None
 
         portcheck(self.serial)
 
@@ -36,19 +36,19 @@ class PreAmplifier:
 
     def bias_on(self):
         self.serial.write("BSON1\n")
-        if self.bias is None:
+        if self.__bias is None:
             bias = raw_input('>> What is bias set to (milliVolts)?\n')
             # Sanitize input?
-            self.bias = int(bias)
+            self.__bias = int(bias)
 
     def bias_off(self):
         self.serial.write("BSON0\n")
-        self.bias = None
+        self.__bias = None
 
     def set_bias_millivolts(self, mv):
         input = "BSLV" + str(mv) + "\r\n"
         self.serial.write(input)
-        self.bias = mv
+        self.__bias = mv
 
     def set_sensitivity_nanoamps(self, val):
         # Does no input sanitization at all
@@ -114,8 +114,8 @@ class SpectrumAnalyzer:
             dsrdtr=0,
             bytesize=_serial.EIGHTBITS,
         )
-        self.trace = 0
-        self.measure = None
+        self.__trace = 0
+        self.__measure = None
 
         portcheck(self.serial)
 
@@ -125,8 +125,8 @@ class SpectrumAnalyzer:
     def setMeasureType(self,mtype):
         # MEAS?g{,i} where i selects 0:Spectrum; 1:PSD; 2,3 are Time Record
         # and Octave (not used by us)
-        self.serial.write("MEAS" + str(self.trace) + "," + str(mtype))
-        self.measure = mtype
+        self.serial.write("MEAS" + str(self.__trace) + "," + str(mtype))
+        self.__measure = mtype
 
     def getWindow(self):
         # Get the window (starting frequency, center frequency, frequency span)
@@ -165,7 +165,7 @@ class SpectrumAnalyzer:
             difference = (1000*freq) - self.start_freq
             nbin = str(int(difference // i)).zfill(3)
 
-            msg = "SPEC?" + str(self.trace) + "0," + nbin 
+            msg = "SPEC?" + str(self.__trace) + "0," + nbin 
 
         return self.send(msg)
         
@@ -216,6 +216,7 @@ def split_voltages(voltages):
 
 
 def capture(preamp, spec, voltages):
+    db = db_connect()
     neg_volts, pos_volts = split_voltages(voltages)
 
     if preamp.bias is None:
@@ -258,6 +259,7 @@ def capture(preamp, spec, voltages):
     except KeyboardInterrupt:
             print ">> Capture cancelled."
     return data
+
 
 ####################
 
