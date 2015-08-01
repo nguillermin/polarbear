@@ -43,7 +43,6 @@ class PreAmplifier:
 
     def bias_off(self):
         self.serial.write("BSON0\n")
-        self.__bias = None
 
     def set_bias_millivolts(self, mv):
         input = "BSLV" + str(mv) + "\r\n"
