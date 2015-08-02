@@ -2,7 +2,7 @@
 # Date: 6/5/14
 # Purpose: Cutting I-V measurements time from hours to minutes
 
-import sys, time, msvcrt
+import sys, time
 import serial as _serial
 from itertools import chain
 
