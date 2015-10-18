@@ -206,7 +206,7 @@ class SpectrumAnalyzer:
         else:
             print 'Calibrating Offset...'
             time.sleep(15)
-            self.sreial.flushInput()
+            self.serial.flushInput()
             self.serial.flushOutput()
             return self.send(msg)
 
