@@ -59,7 +59,7 @@ class PreAmplifier:
     def set_sensitivity_nanoamps(self, val):
         # Does no input sanitization at all
         # Only using 2*multiples of 10 from nanoAmps(n) to microAmps(u)
-        # All possible values are [1,2,5,...1e9,2e9,5e9] picoAmps
+        # although all possible values are [1,2,5,...1e9,2e9,5e9] picoAmps
         n = -1
         sens = val
         while val > 1:
@@ -140,7 +140,10 @@ class SpectrumAnalyzer:
         # Use SPAN?{i}, STRF?{i}, CTRF?{i} commands
         # Possibly use BVAL? command to just get marker frequency?
         self.freq_span = self.getSpan()
-        self.start_freq = 1000*int(self.send('STRF?'))
+        strf = self.send('STRF?')
+        if strf[3] == '.':
+            strf = float(strf)
+        self.start_freq = 1000*int(strf)
 
         if (self.freq_span > 0) or (self.start_freq > 0):
             return 1
@@ -175,12 +178,10 @@ class SpectrumAnalyzer:
 
         return self.send(msg)
         
-    def getAverage(self,freq,count):
+    def setAverage(self,freq,count):
         self.serial.write('AVGO1\r\n')
         self.serial.write('NAVG'+str(count)+'\r\n')
         self.serial.write('STRT\r\n')
-        time.sleep(0.025*count)
-        return self.getFFT(freq)
         
 
     def identify(self):
@@ -219,7 +220,7 @@ def portcheck(ser):
 
 
 def split_voltages(voltages):
-    return reversed([x for x in voltages if x<0]), [x for x in voltages if x>=0] 
+    return list(reversed([x for x in voltages if x<0])), [x for x in voltages if x>=0] 
 
 
 def capture(preamp, spec, voltages):
