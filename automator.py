@@ -9,7 +9,7 @@ from itertools import chain
 if sys.platform == 'nt':
     import msvcrt
 elif sys.platform == 'darwin':
-    print "You're on OS X!"
+    print "You're on OS X! Unfortunately OS X is not supported right now."
 else:
     print "Platform not supported."
     sys.exit(0)
