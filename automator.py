@@ -180,7 +180,7 @@ class SpectrumAnalyzer:
 
         return self.send(msg)
         
-    def setAverage(self,freq,count):
+    def setAverage(self,count):
         self.serial.write('AVGO1\r\n')
         self.serial.write('NAVG'+str(count)+'\r\n')
         self.serial.write('STRT\r\n')
@@ -225,9 +225,15 @@ def split_voltages(voltages):
     return list(reversed([x for x in voltages if x<0])), [x for x in voltages if x>=0] 
 
 
+def voltages_ordered_list(voltages):
+    a = list(reversed([x for x in voltages if x<0]))
+    a.extend([x for x in voltages if x>=0])
+    return a
+
+
 def capture(preamp, spec, voltages):
-    db = db_connect()
-    neg_volts, pos_volts = split_voltages(voltages)
+    #db = db_connect()
+    voltages_list = voltages_ordered_list(voltages)
 
     if preamp.bias is None:
         preamp.bias_on()
@@ -235,40 +241,51 @@ def capture(preamp, spec, voltages):
     # progress = ('|','/','--','\\')
     print ">> Hit any key if Pre-Amp overloads (Ctrl-C to cancel)"
     try:
-        for volts in (pos_volts, neg_volts):
-            preamp.set_sensitivity_nanoamps(2)
-            for i, V in enumerate(volts):
-                preamp.set_bias_millivolts(V)
-                print ">> %s" % V
-                start_time = time.time()
-                while True:
-                    if msvcrt.kbhit():
-                        _ = msvcrt.getch()
-                        print ">> Adjust sensitivity (+/-) and hit Enter to resume"
-                        start_time = time.time()
-                        while True:
-                            if msvcrt.kbhit():
-                                c = msvcrt.getch()
-                                if c == '=' or c == '+':
-                                    if preamp.raise_sensitivity() < 0:
-                                        print "Max sensitivity, hit Ctrl-C to cancel reading or Enter to continue"
-                                    start_time = time.time()
-                                elif c == '-' or c == '_':
-                                    if preamp.lower_sensitivity() < 0:
-                                        print "Min sensitivity, hit Ctrl-C to cancel reading or Enter to continue"
-                                    start_time = time.time()
-                                elif c == '\r':
-                                    print ">> Restarting, hit any key if Pre-Amp overloads"
-                                    break
-                            if (time.time() - start_time) > 10:
-                                print ">> Restarting on timeout..."
+        preamp.set_sensitivity_nanoamps(2)
+        for i, V in enumerate(voltages_list):
+            preamp.set_bias_millivolts(V)
+            print ">> %s" % V
+            start_time = time.time()
+            while True:
+                if msvcrt.kbhit():
+                    _ = msvcrt.getch()
+                    print ">> Adjust sensitivity (+/-) and hit Enter to resume"
+                    start_time = time.time()
+                    while True:
+                        if msvcrt.kbhit():
+                            c = msvcrt.getch()
+                            if c == '=' or c == '+':
+                                if preamp.raise_sensitivity() < 0:
+                                    print "Max sensitivity, hit Ctrl-C to cancel reading or Enter to continue"
+                                start_time = time.time()
+                            elif c == '-' or c == '_':
+                                if preamp.lower_sensitivity() < 0:
+                                    print "Min sensitivity, hit Ctrl-C to cancel reading or Enter to continue"
+                                start_time = time.time()
+                            elif c == '\r':
+                                print ">> Restarting, hit any key if Pre-Amp overloads"
                                 break
-                    if (time.time() - start_time) > 3:
-                        break
+                        if (time.time() - start_time) > 10:
+                            print ">> Restarting on timeout..."
+                            break
+                if (time.time() - start_time) > 3:
+                    break
                 data[V] = (preamp.sensitivity, spec.getFFT(600))
     except KeyboardInterrupt:
             print ">> Capture cancelled."
     return data
+
+
+def photo(preamp,spec,voltages):
+    spec.setMeasureType(0)
+    return capture(preamp,spec,voltages)
+
+
+def noise(preamp,spec,voltages,samples=1):
+    spec.setMeasureType(1)
+    if samples != 1:
+        spec.setAverage(samples)
+    return capture(preamp,spec,voltages)
 
 
 ####################
@@ -281,11 +298,13 @@ def comma_separatify(data_dict):
         out.append(','.join([str(k), str(v[0]), str(v[1]), str(v[0]*float(v[1])),'']))
     return out
 
+
 def save(data,filename):
     with open(filename, "w") as f:
         for l in comma_separatify(data):
             f.write(l+'\n')
         print "Write successful."
+
 
 def save_multiple(datadict_list,filename):
     voltages_set = set(chain(*[ddl.keys() for ddl in datadict_list]))
